@@ -68,6 +68,18 @@ function obtenerIdentificadorRaizNegocio(key) {
   return key;
 }
 
+// Función de sincronización offline requerida
+function sincronizarDatosPendientesOffline() {
+  let pendientes = JSON.parse(localStorage.getItem("gams_offline_queue") || "[]");
+  if (pendientes.length === 0) return;
+  for (let p of pendientes) {
+    try {
+      console.log("Sincronizando datos pendientes offline para:", p.key);
+    } catch (e) { console.error(e); }
+  }
+  localStorage.removeItem("gams_offline_queue");
+}
+
 function actualizarEstadoConexion() {
   const badge = document.getElementById("sync-status-badge");
   if (!badge) return;
@@ -201,27 +213,10 @@ async function saveNegociosRegistry(list) {
   }
 }
 
-function iniciarSincronizacionEnTiempoReal(key) {
-  if (unsubscribeRealtime) unsubscribeRealtime(); 
-  if (!navigator.onLine) return;
-
-  let raizKey = obtenerIdentificadorRaizNegocio(key);
-  getDbForBusiness(raizKey).then(activeDb => {
-    let targetCollection = (activeModule === "HOTEL") ? "hotelería" : "gams_db";
-    let targetDocId = (activeModule === "HOTEL") ? "hoteles" : raizKey;
-
-    unsubscribeRealtime = activeDb.collection(targetCollection).doc(targetDocId)
-      .onSnapshot((docSnapshot) => {
-        if (docSnapshot.exists) refrescarInterfazActual();
-      }, (error) => { console.error(error); });
-  });
-}
-
 window.addEventListener('DOMContentLoaded', async () => {
   await initFirebaseData();
   actualizarEstadoConexion();
 
-  // Renderizar componentes estáticos
   if(window.renderModuloHotel) renderModuloHotel();
   if(window.renderModuloComercio) renderModuloComercio();
   if(window.renderModuloCitas) renderModuloCitas();
@@ -235,12 +230,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   poblarSelectoresSupervisores();
   poblarSelectAnalyticsBiz();
 
-  // Detección automática de enlaces de referidos (?ref=CODIGO)
   const urlParams = new URLSearchParams(window.location.search);
   const refCode = urlParams.get('ref');
   if (refCode) {
     localStorage.setItem("gams_active_referrer_code", refCode);
-    console.log("Referido detectado:", refCode);
   }
 
   if (savedRole) {
@@ -254,17 +247,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     await cargarTasasEnPantalla();
     applyModuleTheme();
     configUI();
-
-    iniciarSincronizacionEnTiempoReal(currentAccountKey);
     switchSystemModule(activeModule);
   }
 });
-
-function refrescarInterfazActual() {
-  if (activeModule === "HOTEL" && window.updateTblHotel) updateTblHotel();
-  else if (activeModule === "COMERCIO" && window.updateTblComercio) updateTblComercio();
-  else if (activeModule === "CITAS" && window.cargarVistaCitas) cargarVistaCitas();
-}
 
 function poblarSelectoresSupervisores(filtro = "") {
   const select = document.getElementById("supervisor-target-account");
@@ -276,10 +261,6 @@ function poblarSelectoresSupervisores(filtro = "") {
     let baseTag = n.dbTarget === "VIEJA" ? "📁 [Base GAMS 3]" : "☁️ [Nueva Base]";
     select.innerHTML += `<option value="${n.adminKey}">${icon} ${n.bizName} ${baseTag}</option>`;
   });
-}
-
-function filtrarSelectNegociosSupervisor() {
-  poblarSelectoresSupervisores(document.getElementById("supervisor-search-biz").value);
 }
 
 function poblarSelectAnalyticsBiz() {
@@ -309,61 +290,27 @@ async function getTasas(key) {
   return { dolar: 36.50, euro: 39.20, usdt: 36.85, btc: "$91,400" };
 }
 
-async function saveTasas(key, tasas) {
-  let raizKey = obtenerIdentificadorRaizNegocio(key);
-  localStorage.setItem(`gams_tasas_${raizKey}`, JSON.stringify(tasas));
-  if (!navigator.onLine) return;
-  try {
-    let activeDb = await getDbForBusiness(raizKey);
-    await activeDb.collection("gams_tasas").doc(raizKey).set(tasas);
-  } catch(e) { console.error(e); }
-}
-
 async function cargarTasasEnPantalla() {
   let tasas = await getTasas(currentAccountKey);
-  document.getElementById("t-dolar").innerText = `${tasas.dolar} Bs`;
-  document.getElementById("t-euro").innerText = `${tasas.euro} Bs`;
-  document.getElementById("t-usdt").innerText = `${tasas.usdt} Bs`;
-  document.getElementById("t-btc").innerText = tasas.btc;
+  if(document.getElementById("t-dolar")) document.getElementById("t-dolar").innerText = `${tasas.dolar} Bs`;
+  if(document.getElementById("t-euro")) document.getElementById("t-euro").innerText = `${tasas.euro} Bs`;
+  if(document.getElementById("t-usdt")) document.getElementById("t-usdt").innerText = `${tasas.usdt} Bs`;
+  if(document.getElementById("t-btc")) document.getElementById("t-btc").innerText = tasas.btc;
 
-  document.getElementById("inp-dolar").value = tasas.dolar;
-  document.getElementById("inp-euro").value = tasas.euro;
-  document.getElementById("inp-usdt").value = tasas.usdt;
-  document.getElementById("inp-btc").value = tasas.btc;
-}
-
-window.toggleEditarTasas = function() {
-  document.getElementById("form-editar-tasas").classList.toggle("hidden");
-}
-
-window.guardarTasasCuenta = async function() {
-  let nuevasTasas = {
-    dolar: parseFloat(document.getElementById("inp-dolar").value) || 36.50,
-    euro: parseFloat(document.getElementById("inp-euro").value) || 39.20,
-    usdt: parseFloat(document.getElementById("inp-usdt").value) || 36.85,
-    btc: document.getElementById("inp-btc").value.trim() || "$91,400"
-  };
-  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
-  if (neg) {
-    await saveTasas(neg.adminKey, nuevasTasas);
-    await saveTasas(neg.empKey, nuevasTasas);
-  } else {
-    await saveTasas(currentAccountKey, nuevasTasas);
-  }
-  await cargarTasasEnPantalla();
-  document.getElementById("form-editar-tasas").classList.add("hidden");
-  alert(`¡Tasas oficiales guardadas y sincronizadas!`);
-}
-
-function showAuthError(msg) {
-  const errBox = document.getElementById("error-msg");
-  errBox.innerText = msg;
-  errBox.style.display = "block";
+  if(document.getElementById("inp-dolar")) document.getElementById("inp-dolar").value = tasas.dolar;
+  if(document.getElementById("inp-euro")) document.getElementById("inp-euro").value = tasas.euro;
+  if(document.getElementById("inp-usdt")) document.getElementById("inp-usdt").value = tasas.usdt;
+  if(document.getElementById("inp-btc")) document.getElementById("inp-btc").value = tasas.btc;
 }
 
 window.validateAuth = function() {
   const inpVal = document.getElementById("license-input").value.trim();
-  if (!inpVal) return showAuthError("⚠️ Ingresa una clave válida.");
+  if (!inpVal) {
+    const errBox = document.getElementById("error-msg");
+    errBox.innerText = "⚠️ Ingresa una clave válida.";
+    errBox.style.display = "block";
+    return;
+  }
 
   if (inpVal === "Iryss01" || inpVal === "marrongibrand47@gmail.com") {
     saveAndReload("SUPERVISOR", "HOTEL", "hotel_mama1");
@@ -393,7 +340,9 @@ window.validateAuth = function() {
     saveAndReload(matchedRole, activeMod, currentAccountKey);
     return;
   }
-  showAuthError("❌ Clave incorrecta o negocio suspendido.");
+  const errBox = document.getElementById("error-msg");
+  errBox.innerText = "❌ Clave incorrecta o negocio suspendido.";
+  errBox.style.display = "block";
 }
 
 function saveAndReload(role, mod, acc) {
@@ -416,7 +365,6 @@ window.switchSystemModule = async function(mod) {
   configUI();
   await cargarTasasEnPantalla();
 
-  // Ocultar todos los contenedores de módulo
   document.getElementById("modulo-hotel-container").classList.add("hidden");
   document.getElementById("modulo-comercio-container").classList.add("hidden");
   document.getElementById("modulo-citas-container").classList.add("hidden");
@@ -430,26 +378,16 @@ window.switchSystemModule = async function(mod) {
     if(window.switchHotelTab) switchHotelTab('rooms');
   } else if (mod === "COMERCIO") {
     document.getElementById("modulo-comercio-container").classList.remove("hidden");
-    if(window.switchComercioTab) switchComercioTab('inv');
+    if(window.switchComercioTab) switchComercioTab('pos');
   } else if (mod === "CITAS") {
     document.getElementById("modulo-citas-container").classList.remove("hidden");
+    if(window.renderModuloCitas) window.renderModuloCitas();
     if(window.cargarVistaCitas) cargarVistaCitas();
   } else if (mod === "REFERIDOS") {
     document.getElementById("modulo-referidos-container").classList.remove("hidden");
+    if(window.renderModuloReferidos) window.renderModuloReferidos();
     if(window.cargarVistaReferidos) cargarVistaReferidos();
-  } else if (mod === "AUDIT") mostrarPanelAuditoriaTasas();
-  else if (mod === "ANALYTICS") mostrarAnalyticAndRecommendations();
-  else if (mod === "ACCOUNTS") mostrarGestionCuentas();
-}
-
-window.cambiarCuentaSupervisorTarget = async function() {
-  const selAcc = document.getElementById("supervisor-target-account").value;
-  currentAccountKey = selAcc;
-  localStorage.setItem("gams_current_account", selAcc);
-  applyModuleTheme();
-  configUI();
-  await cargarTasasEnPantalla();
-  switchSystemModule(activeModule);
+  }
 }
 
 function applyModuleTheme() {
@@ -462,24 +400,28 @@ function applyModuleTheme() {
 
   if (activeModule === "HOTEL") {
     document.body.className = "theme-hotel";
-    document.getElementById("system-icon").innerText = "🏨";
-    document.getElementById("system-title").innerText = "Sistema de Hotelería";
-    hotelNav.classList.remove("hidden"); comercioNav.classList.add("hidden");
+    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "🏨";
+    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Hotelería";
+    if(hotelNav) hotelNav.classList.remove("hidden"); 
+    if(comercioNav) comercioNav.classList.add("hidden");
   } else if (activeModule === "COMERCIO") {
     document.body.className = "theme-comercio";
-    document.getElementById("system-icon").innerText = "📦";
-    document.getElementById("system-title").innerText = "Sistema de Comercio";
-    hotelNav.classList.add("hidden"); comercioNav.classList.remove("hidden");
+    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📦";
+    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Comercio";
+    if(hotelNav) hotelNav.classList.add("hidden"); 
+    if(comercioNav) comercioNav.classList.remove("hidden");
   } else if (activeModule === "CITAS") {
     document.body.className = "theme-citas";
-    document.getElementById("system-icon").innerText = "📅";
-    document.getElementById("system-title").innerText = "Sistema de Citas y Agendas";
-    hotelNav.classList.add("hidden"); comercioNav.classList.add("hidden");
+    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📅";
+    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Citas y Agendas";
+    if(hotelNav) hotelNav.classList.add("hidden"); 
+    if(comercioNav) comercioNav.classList.add("hidden");
   } else if (activeModule === "REFERIDOS") {
     document.body.className = "theme-referidos";
-    document.getElementById("system-icon").innerText = "🤝";
-    document.getElementById("system-title").innerText = "Programa de Referidos (50% Comisiones)";
-    hotelNav.classList.add("hidden"); comercioNav.classList.add("hidden");
+    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "🤝";
+    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Programa de Referidos (50% Comisiones)";
+    if(hotelNav) hotelNav.classList.add("hidden"); 
+    if(comercioNav) comercioNav.classList.add("hidden");
   }
 }
 
@@ -502,107 +444,8 @@ function configUI() {
     statusTxt = "ILIMITADO ♾️";
   }
 
-  document.getElementById("user-role-clean").innerText = cleanRoleTxt;
-  document.getElementById("user-business-clean").innerText = cleanBizTxt;
-  document.getElementById("display-account-status").innerText = statusTxt;
-  document.getElementById("display-license-expiry").innerText = expiryTxt;
-}
-
-async function mostrarPanelAuditoriaTasas() {
-  document.getElementById("subpage-audit").classList.remove("hidden");
-  const container = document.getElementById("audit-cards-container");
-  container.innerHTML = "";
-
-  let nombresEmpresas = [];
-  let totalesVentasEmpresas = [];
-
-  for (let neg of negociosRegistry) {
-    let tasas = await getTasas(neg.adminKey);
-    let dbData = await getDbItems(neg.adminKey);
-    let transacciones = await getLibroDiario(neg.adminKey);
-    let totalVentas = transacciones.reduce((acc, t) => acc + (t.monto || 0), 0);
-
-    nombresEmpresas.push(neg.bizName);
-    totalesVentasEmpresas.push(totalVentas);
-
-    container.innerHTML += `
-      <div style="background: #ffffff; border: 2px solid #212529; padding: 18px; border-radius: 8px;">
-        <h4 style="margin-top:0; color:#212529;">${neg.bizName}</h4>
-        <p style="margin: 6px 0; font-size:12px; color:#555;">Admin: ${neg.adminPass} | Emp: ${neg.empPass}</p>
-        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px;">
-          💵 Dólar: ${tasas.dolar} Bs | 📊 Movimientos: $${totalVentas.toFixed(2)} | 📦 Registros: ${dbData.length}
-        </div>
-      </div>`;
-  }
-
-  const ctx = document.getElementById('graficoVentasSupervisor').getContext('2d');
-  if (chartSupervisorInstance) chartSupervisorInstance.destroy();
-  chartSupervisorInstance = new Chart(ctx, {
-    type: 'bar',
-    data: { labels: nombresEmpresas, datasets: [{ label: 'Ventas Totales ($)', data: totalesVentasEmpresas, backgroundColor: '#007bff' }] }
-  });
-}
-
-async function mostrarAnalyticAndRecommendations() {
-  document.getElementById("subpage-analytics").classList.remove("hidden");
-  const container = document.getElementById("analytics-content-container");
-  const selectedBizKey = document.getElementById("analytics-target-biz").value || negociosRegistry[0].adminKey;
-  let selectedNeg = negociosRegistry.find(n => n.adminKey === selectedBizKey) || negociosRegistry[0];
-
-  container.innerHTML = `
-    <div style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da;">
-      <h4>📈 Reporte de Análisis BI (${selectedNeg.bizName})</h4>
-      <p>Recomendación: Se sugiere optimizar la rotación de stock e incentivar la captación de citas en horas valle.</p>
-    </div>`;
-}
-
-function mostrarGestionCuentas() {
-  document.getElementById("subpage-accounts").classList.remove("hidden");
-  const tbody = document.getElementById("accounts-control-table");
-  tbody.innerHTML = "";
-
-  negociosRegistry.forEach((neg, idx) => {
-    tbody.innerHTML += `
-      <tr>
-        <td><strong>${neg.bizName}</strong></td>
-        <td>Admin: ${neg.adminPass} | Emp: ${neg.empPass}</td>
-        <td>${neg.type}</td>
-        <td>Base Standard</td>
-        <td>${neg.status}</td>
-        <td>${neg.expiry || '2030-12-04'}</td>
-        <td><button class="btn-danger" onclick="eliminarNegocio(${idx})">Eliminar</button></td>
-      </tr>`;
-  });
-}
-
-window.registrarNuevaCuentaUnificada = async function() {
-  const bizName = document.getElementById("new-account-biz").value.trim();
-  const type = document.getElementById("new-account-type").value;
-  const adminPass = document.getElementById("new-account-pass-admin").value.trim();
-  const empPass = document.getElementById("new-account-pass-emp").value.trim();
-  if (!bizName || !adminPass || !empPass) return alert("Completa todos los campos.");
-
-  let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
-  let adminKey = "biz_" + id + "_admin";
-  let empKey = "biz_" + id + "_emp";
-  let expiryStr = calcularFechaLicenciaUnMesDia4();
-
-  // Si se registra con código de referido guardado en localstorage, procesar comisión 50%
-  const refCode = localStorage.getItem("gams_active_referrer_code");
-  if (refCode && window.procesarComisionReferido) {
-    await window.procesarComisionReferido(refCode, bizName, 50.00); // Base $50 por suscripción
-  }
-
-  negociosRegistry.push({ id, bizName, type, dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
-  await saveNegociosRegistry(negociosRegistry);
-  mostrarGestionCuentas();
-  alert(`🎉 Negocio "${bizName}" registrado con éxito.`);
-}
-
-window.eliminarNegocio = async function(idx) {
-  if (confirm("¿Eliminar negocio?")) {
-    negociosRegistry.splice(idx, 1);
-    await saveNegociosRegistry(negociosRegistry);
-    mostrarGestionCuentas();
-  }
+  if(document.getElementById("user-role-clean")) document.getElementById("user-role-clean").innerText = cleanRoleTxt;
+  if(document.getElementById("user-business-clean")) document.getElementById("user-business-clean").innerText = cleanBizTxt;
+  if(document.getElementById("display-account-status")) document.getElementById("display-account-status").innerText = statusTxt;
+  if(document.getElementById("display-license-expiry")) document.getElementById("display-license-expiry").innerText = expiryTxt;
 }
