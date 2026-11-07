@@ -3,17 +3,17 @@ window.renderChatAI = function() {
   const container = document.getElementById("chat-ai-container");
   if (!container) return;
   container.innerHTML = `
-    <button class="gams-ai-chat-btn" onclick="toggleGamsAIChat()" title="Asistente Michael GAMS">🤖</button>
+    <button class="gams-ai-chat-btn" onclick="toggleGamsAIChat()" title="Asistente GAMS">🤖</button>
     <div id="gams-ai-chat-window" class="gams-ai-chat-window hidden">
       <div class="gams-ai-chat-header">
         <span>🤖 Michael - GAMS</span>
         <button style="background:none; border:none; color:white; font-size:16px; cursor:pointer;" onclick="toggleGamsAIChat()">✖</button>
       </div>
       <div id="gams-ai-chat-body" class="gams-ai-chat-body">
-        <div class="gams-ai-msg assistant">¡Hola! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?</div>
+        <div class="gams-ai-msg assistant" id="gams-saludo-inicial">¡Hola! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?</div>
       </div>
       
-      <!-- BOTONES DE ACCESO RÁPIDO LIMPIOS -->
+      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div style="padding: 6px 10px; background: #e9ecef; display: flex; gap: 4px; flex-wrap: wrap; border-top: 1px solid #ced4da;">
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Ver Precios')">💵 Precios</button>
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #28a745;" onclick="preguntaRapida('Asesoramiento Contable')">📊 Contabilidad</button>
@@ -27,6 +27,7 @@ window.renderChatAI = function() {
       </div>
     </div>
   `;
+  actualizarSaludoSegunRol();
 }
 
 window.toggleGamsAIChat = function() {
@@ -36,6 +37,22 @@ window.toggleGamsAIChat = function() {
 window.preguntaRapida = function(texto) {
   document.getElementById("gams-ai-input").value = texto;
   enviarPreguntaGamsAI();
+}
+
+function actualizarSaludoSegunRol() {
+  const saludoBox = document.getElementById("gams-saludo-inicial");
+  if (!saludoBox) return;
+  
+  let rol = window.userRole || "EMPLEADO";
+  let tratamiento = "Empleado";
+  
+  if (rol === "SUPERVISOR") {
+    tratamiento = "Gibrand";
+  } else if (rol.includes("ADMIN")) {
+    tratamiento = "Jefe";
+  }
+  
+  saludoBox.innerHTML = `¡Hola <strong>${tratamiento}</strong>! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?`;
 }
 
 window.enviarPreguntaGamsAI = async function() {
@@ -116,7 +133,7 @@ window.enviarPreguntaGamsAI = async function() {
     const res = await fetch('https://gibrand-digital-cores.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: `[Rol: ${rolActual}] Consulta: ${textoOriginal}`, device: 'GAMS Widget' })
+      body: JSON.stringify({ prompt: `[Rol: ${rolActual}] Consulta: ${textoOriginal}`, device: 'GAMS' })
     });
     const data = await res.json();
     document.getElementById(loadingId).remove();
