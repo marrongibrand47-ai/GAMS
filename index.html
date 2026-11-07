@@ -1,4 +1,3 @@
-html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,2239 +9,239 @@ html
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-<!-- jsPDF y Chart.js para Generación de PDF y Gráficos -->
+<!-- jsPDF y Chart.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Marked.js para formatear negritas y listas en el chat de IA -->
+<!-- Marked.js para formatear chat IA -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-<style>
-body { font-family: Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; box-sizing: border-box; transition: background 0.3s; }
-.card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; margin-bottom: 15px; border-top: 4px solid #007bff; transition: border-color 0.3s; }
-.hidden { display: none !important; }
-input, select, textarea, button { padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
-button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
-button:hover { background-color: #0056b3; }
-.btn-success { background-color: #28a745; color: white; }
-.btn-success:hover { background-color: #218838; }
-.btn-warning { background-color: #ffc107; color: #212529; }
-.btn-warning:hover { background-color: #e0a800; }
-.btn-danger { background-color: #dc3545; color: white; }
-.btn-danger:hover { background-color: #bd2130; }
-.btn-delete { background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
-th, td { border: 1px solid #ddd; padding: 8px; text-align: left; word-break: break-word; }
-th { background-color: #343a40; color: white; }
-.grid { display: flex; flex-direction: column; gap: 15px; }
-@media (min-width: 768px) {
-  .grid { flex-direction: row; }
-  body { padding: 20px; }
-  .card { padding: 20px; margin-bottom: 20px; }
-}
-.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
-.badge { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-.badge-biz { background: #343a40; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-.badge-status-active { background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-.badge-status-suspended { background: #dc3545; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 11px; }
-.sync-status { font-size: 12px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
-.sync-online { background-color: #d4edda; color: #155724; }
-.sync-offline { background-color: #f8d7da; color: #721c24; }
-.license-status-box { background-color: #e2f0d9; border-left: 5px solid #385723; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 5px; }
-@media (min-width: 768px) {
-  .license-status-box { flex-direction: row; justify-content: space-between; align-items: center; }
-}
-.exchange-ticker {
-  background: #f8f9fa;
-  border: 1px solid #cbd3da;
-  border-radius: 6px;
-  padding: 10px 15px;
-  margin-bottom: 15px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 10px;
-  text-align: center;
-}
-.exchange-item {
-  background: white;
-  padding: 8px;
-  border-radius: 4px;
-  border-left: 4px solid #007bff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-.exchange-item span { display: block; font-size: 12px; color: #555; }
-.exchange-item strong { font-size: 15px; color: #333; }
-.nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-direction: column; flex-wrap: wrap; }
-@media (min-width: 768px) {
-  .nav-tabs { flex-direction: row; }
-}
-.nav-tabs button { flex: 1; background-color: #6c757d; font-size: 13px; padding: 10px; }
-.nav-tabs button.active { background-color: #007bff; }
-.alert-row { background-color: #f8d7da !important; }
-.album-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-.sticker-card {
-  background: #ffffff;
-  border: 2px solid #007bff;
-  border-radius: 12px;
-  padding: 12px;
-  text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  position: relative;
-}
-.sticker-card.critical { border-color: #dc3545; }
-.sticker-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; background-color: #f0f0f0; }
-.sticker-title { font-size: 15px; font-weight: bold; margin: 8px 0 2px 0; color: #333; }
-.sticker-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 4px; }
-.sticker-badge.ok { background-color: #d4edda; color: #155724; }
-.sticker-badge.low { background-color: #f8d7da; color: #721c24; }
-
-.main-system-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-.main-system-tabs button { flex: 1; min-width: 150px; background-color: #495057; font-size: 13px; padding: 12px; border-radius: 6px; }
-.main-system-tabs button.active-sys { background-color: #0056b3; font-weight: bold; }
-
-.scanner-kiosk-box {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border: 2px dashed #28a745;
-  border-radius: 10px;
-  padding: 20px;
-  margin-top: 10px;
-}
-.scanned-product-preview {
-  background: white;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-}
-@media (min-width: 768px) {
-  .scanned-product-preview { flex-direction: row; align-items: center; }
-}
-
-.cart-container {
-  background: #fff;
-  border: 2px solid #28a745;
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 15px;
-}
-
-/* ESTILOS DEL WIDGET FLOTANTE DE IA EN GAMS */
-.gams-ai-chat-btn {
-  position: fixed; bottom: 20px; right: 20px; background: #007bff; color: white; border: none; border-radius: 50px; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: transform 0.2s;
-}
-.gams-ai-chat-btn:hover { transform: scale(1.08); background: #0056b3; }
-
-.gams-ai-chat-window {
-  position: fixed; bottom: 90px; right: 20px; width: 360px; max-width: 90vw; height: 500px; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; border: 1px solid #ced4da; overflow: hidden;
-}
-.gams-ai-chat-header { background: #007bff; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
-.gams-ai-chat-body { flex: 1; padding: 12px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 10px; font-size: 14px; word-break: break-word; overflow-wrap: break-word; }
-.gams-ai-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; line-height: 1.5; word-break: break-word; overflow-wrap: break-word; }
-.gams-ai-msg.user { background: #007bff; color: white; align-self: flex-end; }
-.gams-ai-msg.assistant { background: #e9ecef; color: #333; align-self: flex-start; border: 1px solid #ced4da; }
-.gams-ai-msg.assistant p { margin: 0 0 6px 0; }
-.gams-ai-msg.assistant ul, .gams-ai-msg.assistant ol { margin: 5px 0; padding-left: 20px; }
-.gams-ai-chat-footer { padding: 10px; background: white; border-top: 1px solid #ced4da; display: flex; gap: 6px; }
-.gams-ai-chat-footer input { margin: 0; padding: 8px 10px; font-size: 14px; }
-.gams-ai-chat-footer button { width: auto; margin: 0; padding: 8px 15px; font-size: 14px; }
-
-body.theme-hotel { background-color: #eef5fc; }
-body.theme-hotel .card { border-top-color: #0056b3; }
-body.theme-hotel th { background-color: #004085; }
-body.theme-hotel .nav-tabs button.active { background-color: #0056b3; }
-body.theme-hotel .sticker-card { border-color: #0056b3; }
-
-body.theme-comercio { background-color: #f4f6f4; }
-body.theme-comercio .card { border-top-color: #28a745; }
-body.theme-comercio th { background-color: #1e7e34; }
-body.theme-comercio .nav-tabs button.active { background-color: #28a745; }
-body.theme-comercio .exchange-item { border-left-color: #28a745; }
-
-body.theme-audit { background-color: #f1f3f5; }
-body.theme-audit .card { border-top-color: #212529; }
-body.theme-audit th { background-color: #212529; }
-body.theme-audit .exchange-item { border-left-color: #212529; }
-body.theme-audit .main-system-tabs button.active-sys { background-color: #212529 !important; }
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
 <!-- PANTALLA DE INICIO DE SESIÓN -->
 <div id="license-screen" class="card">
-<h2>🔒 Iniciar Sesión - GAMS Company (Cloud & Offline Híbrido)</h2>
-<p>Ingresa tu clave de acceso autorizada:</p>
-<input type="password" id="license-input" placeholder="Ingresa tu clave de acceso...">
-<button class="btn-success" onclick="validateAuth()">Entrar al Sistema</button>
-<div id="error-msg" class="error"></div>
+  <h2>🔒 Iniciar Sesión - GAMS Company (Cloud & Offline Híbrido)</h2>
+  <p>Ingresa tu clave de acceso autorizada:</p>
+  <input type="password" id="license-input" placeholder="Ingresa tu clave de acceso...">
+  <button class="btn-success" onclick="validateAuth()">Entrar al Sistema</button>
+  <div id="error-msg" class="error"></div>
 </div>
 
 <!-- APLICACIÓN PRINCIPAL -->
 <div id="app-screen" class="card hidden">
-<h2><span id="system-icon">🏨</span> <span id="system-title">Sistema de Hotelería</span></h2>
-<div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px 15px; border-radius: 6px; margin-bottom: 12px;">
-  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
-    <div><strong>Rango Activo:</strong> <span id="user-role-clean" class="badge"></span></div>
-    <span id="sync-status-badge" class="sync-status sync-online">☁️ Conectado a Firebase</span>
-  </div>
-  <div style="margin-top: 5px; font-size: 13px;">
-    🏢 <strong>Comercio / Negocio:</strong> <span id="user-business-clean" class="badge-biz"></span>
-  </div>
-</div>
-
-<!-- PESTAÑAS SUPERIORES (SUPERVISOR) -->
-<div id="supervisor-system-bar" class="main-system-tabs hidden">
-  <button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Módulo Hotel</button>
-  <button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Módulo Comercio</button>
-  <button id="sys-tab-audit" onclick="switchSystemModule('AUDIT')">📊 Auditoría y Gráficos</button>
-  <button id="sys-tab-analytics" onclick="switchSystemModule('ANALYTICS')">📈 Análisis e Inteligencia BI</button>
-  <button id="sys-tab-accounts" onclick="switchSystemModule('ACCOUNTS')">⚙️ Gestión de Cuentas</button>
-</div>
-
-<div id="supervisor-account-selector-box" class="hidden" style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
-  <label style="font-weight: bold; font-size: 13px;">🔎 Buscar o Seleccionar Negocio Unificado:</label>
-  <input type="text" id="supervisor-search-biz" placeholder="Escribe para filtrar negocio..." oninput="filtrarSelectNegociosSupervisor()" style="margin-bottom: 8px; background: white;">
-  <select id="supervisor-target-account" onchange="cambiarCuentaSupervisorTarget()" style="font-weight: bold; color: #0056b3; margin:0;"></select>
-</div>
-
-<!-- TICKER DE DIVISAS -->
-<div class="exchange-ticker">
-  <div class="exchange-item"><span>💵 Dólar (Cuenta)</span><strong id="t-dolar">36.50 Bs</strong></div>
-  <div class="exchange-item"><span>💶 Euro (EUR)</span><strong id="t-euro">39.20 Bs</strong></div>
-  <div class="exchange-item"><span>🪙 USDT / Cripto</span><strong id="t-usdt">36.85 Bs</strong></div>
-  <div class="exchange-item"><span>🌐 Bitcoin (BTC)</span><strong id="t-btc">$91,400</strong></div>
-</div>
-
-<div id="divisa-admin-panel" style="margin-bottom: 15px; display:none;">
-  <button style="background-color: #6c757d; font-size: 13px; padding: 8px; width:auto;" onclick="toggleEditarTasas()">⚙️ Establecer Tasas de Cambio del Negocio</button>
-  
-  <div id="form-editar-tasas" class="hidden" style="background: #f8f9fa; padding: 12px; border: 1px solid #ccc; border-radius: 6px; margin-top: 8px;">
-    <p style="margin:0 0 8px 0; font-weight:bold; font-size:13px;">Definir tasas monetarias oficiales del comercio:</p>
-    <div class="grid" style="gap:5px;">
-      <div><label><small>Dólar (Bs):</small></label><input type="number" id="inp-dolar" step="0.01"></div>
-      <div><label><small>Euro (Bs):</small></label><input type="number" id="inp-euro" step="0.01"></div>
+  <h2><span id="system-icon">🏨</span> <span id="system-title">Sistema de Hotelería</span></h2>
+  <div style="background: #f8f9fa; border: 1px solid #dee2e6; padding: 10px 15px; border-radius: 6px; margin-bottom: 12px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
+      <div><strong>Rango Activo:</strong> <span id="user-role-clean" class="badge"></span></div>
+      <span id="sync-status-badge" class="sync-status sync-online">☁️ Conectado a Firebase</span>
     </div>
-    <div class="grid" style="gap:5px; margin-top:5px;">
-      <div><label><small>USDT / Cripto (Bs):</small></label><input type="number" id="inp-usdt" step="0.01"></div>
-      <div><label><small>Bitcoin ($ USD):</small></label><input type="text" id="inp-btc"></div>
+    <div style="margin-top: 5px; font-size: 13px;">
+      🏢 <strong>Comercio / Negocio:</strong> <span id="user-business-clean" class="badge-biz"></span>
     </div>
-    <button class="btn-success" style="margin-top: 8px; padding: 8px;" onclick="guardarTasasCuenta()">💾 Guardar Tasas</button>
   </div>
-</div>
 
-<div class="license-status-box">
-  <div>🛡️ <strong>Estado de Cuenta:</strong> <span id="display-account-status" style="color: #385723; font-weight: bold;">ACTIVO</span></div>
-  <div>⏳ <strong>Vencimiento Licencia:</strong> <span id="display-license-expiry" style="font-weight: bold;">2030-12-04</span></div>
-</div>
-
-<!-- NAVEGACIÓN -->
-<div id="hotel-nav" class="nav-tabs">
-  <button id="h-tab-rooms" class="active" onclick="switchHotelTab('rooms')">🛏️ Cuartos</button>
-  <button id="h-tab-checkin" onclick="switchHotelTab('checkin')">🛎️ Check-In</button>
-  <button id="h-tab-album" onclick="switchHotelTab('album')">📸 Fotos y Tarifas</button>
-  <button id="h-tab-occupied" onclick="switchHotelTab('occupied')">📋 Huéspedes Activos</button>
-</div>
-
-<div id="comercio-nav" class="nav-tabs hidden">
-  <button id="c-tab-inv" class="active" onclick="switchComercioTab('inv')">📦 Inventario & Libro Diario</button>
-  <button id="c-tab-pos" onclick="switchComercioTab('pos')">🛒 POS & Carrito</button>
-  <button id="c-tab-cxc" onclick="switchComercioTab('cxc')">💳 Cuentas por Cobrar (CxC)</button>
-  <button id="c-tab-album" onclick="switchComercioTab('album')">📸 Galería</button>
-  <button id="c-tab-low" onclick="switchComercioTab('low')">⚠️ Alertas Stock</button>
-</div>
-
-<!-- AUDITORÍA Y GRÁFICOS -->
-<div id="subpage-audit" class="hidden">
-  <h3>📊 Auditoría Unificada de Negocios y Gráficos de Ventas</h3>
-  <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ced4da;">
-    <h4 style="margin-top:0; color:#0056b3;">📈 Gráfico General de Ventas por Empresa</h4>
-    <canvas id="graficoVentasSupervisor" style="max-height: 300px; width: 100%;"></canvas>
+  <!-- PESTAÑAS SUPERIORES (SUPERVISOR) -->
+  <div id="supervisor-system-bar" class="main-system-tabs hidden">
+    <button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Módulo Hotel</button>
+    <button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Módulo Comercio</button>
+    <button id="sys-tab-citas" onclick="switchSystemModule('CITAS')">📅 Módulo Citas / Agendas</button>
+    <button id="sys-tab-referidos" onclick="switchSystemModule('REFERIDOS')">🤝 Módulo Referidos (50%)</button>
+    <button id="sys-tab-audit" onclick="switchSystemModule('AUDIT')">📊 Auditoría y Gráficos</button>
+    <button id="sys-tab-analytics" onclick="switchSystemModule('ANALYTICS')">📈 Análisis BI</button>
+    <button id="sys-tab-accounts" onclick="switchSystemModule('ACCOUNTS')">⚙️ Gestión Cuentas</button>
   </div>
-  <div id="audit-cards-container" class="grid" style="gap: 15px; margin-top: 15px;"></div>
-</div>
 
-<!-- ANÁLISIS & BI -->
-<div id="subpage-analytics" class="hidden">
-  <h3>📈 Análisis de Datos y Recomendaciones de Negocio (BI)</h3>
-  <div style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
-    <label style="font-weight: bold; font-size: 13px;">🏢 Seleccionar Comercio:</label>
-    <select id="analytics-target-biz" onchange="mostrarAnalyticAndRecommendations()" style="font-weight: bold; color: #0056b3; margin-top: 5px;"></select>
+  <div id="supervisor-account-selector-box" class="hidden" style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
+    <label style="font-weight: bold; font-size: 13px;">🔎 Buscar o Seleccionar Negocio Unificado:</label>
+    <input type="text" id="supervisor-search-biz" placeholder="Escribe para filtrar negocio..." oninput="filtrarSelectNegociosSupervisor()" style="margin-bottom: 8px; background: white;">
+    <select id="supervisor-target-account" onchange="cambiarCuentaSupervisorTarget()" style="font-weight: bold; color: #0056b3; margin:0;"></select>
   </div>
-  <div id="analytics-content-container"></div>
-</div>
 
-<!-- GESTIÓN DE CUENTAS -->
-<div id="subpage-accounts" class="hidden">
-  <h3>⚙️ Gestión y Control de Cuentas</h3>
-  <div style="background: #ffffff; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-    <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio</h4>
-    <div class="grid" style="gap:10px;">
-      <div><label><small>Nombre del Negocio:</small></label><input type="text" id="new-account-biz" placeholder="Ej: Hotel del Sol o Abastos GAMS"></div>
-      <div><label><small>Tipo de Sistema:</small></label>
-        <select id="new-account-type">
-          <option value="Inventario / Comercio">📦 Inventario / Comercio (Base GAMS 3)</option>
-          <option value="Hotelería">🏨 Hotelería (Base gams-hoteleria)</option>
-        </select>
+  <!-- TICKER DE DIVISAS -->
+  <div class="exchange-ticker">
+    <div class="exchange-item"><span>💵 Dólar (Cuenta)</span><strong id="t-dolar">36.50 Bs</strong></div>
+    <div class="exchange-item"><span>💶 Euro (EUR)</span><strong id="t-euro">39.20 Bs</strong></div>
+    <div class="exchange-item"><span>🪙 USDT / Cripto</span><strong id="t-usdt">36.85 Bs</strong></div>
+    <div class="exchange-item"><span>🌐 Bitcoin (BTC)</span><strong id="t-btc">$91,400</strong></div>
+  </div>
+
+  <div id="divisa-admin-panel" style="margin-bottom: 15px; display:none;">
+    <button style="background-color: #6c757d; font-size: 13px; padding: 8px; width:auto;" onclick="toggleEditarTasas()">⚙️ Establecer Tasas de Cambio del Negocio</button>
+    <div id="form-editar-tasas" class="hidden" style="background: #f8f9fa; padding: 12px; border: 1px solid #ccc; border-radius: 6px; margin-top: 8px;">
+      <p style="margin:0 0 8px 0; font-weight:bold; font-size:13px;">Definir tasas monetarias oficiales del comercio:</p>
+      <div class="grid" style="gap:5px;">
+        <div><label><small>Dólar (Bs):</small></label><input type="number" id="inp-dolar" step="0.01"></div>
+        <div><label><small>Euro (Bs):</small></label><input type="number" id="inp-euro" step="0.01"></div>
       </div>
-    </div>
-    <div class="grid" style="gap:10px; margin-top:5px;">
-      <div><label><small>🔑 Clave Admin:</small></label><input type="text" id="new-account-pass-admin" placeholder="Ej: admin123"></div>
-      <div><label><small>🔑 Clave Empleado:</small></label><input type="text" id="new-account-pass-emp" placeholder="Ej: emp123"></div>
-    </div>
-    <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio</button>
-  </div>
-
-  <div style="overflow-x: auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Comercio</th>
-          <th>Claves (Admin / Empleado)</th>
-          <th>Tipo</th>
-          <th>Base de Datos</th>
-          <th>Licencia</th>
-          <th>Vencimiento</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="accounts-control-table"></tbody>
-    </table>
-  </div>
-</div>
-
-<!-- INVENTARIO / HABITACIONES -->
-<div id="subpage-inventory">
-  <h3 id="table-title">Registro General</h3>
-  <div style="overflow-x: auto;">
-    <table>
-    <thead>
-    <tr>
-      <th>Fecha</th>
-      <th id="th-code">Código / ID</th>
-      <th id="th-name">Nombre</th>
-      <th id="th-status">Estado / Stock</th>
-      <th id="th-price">Precio</th>
-      <th>Acciones</th>
-    </tr>
-    </thead>
-    <tbody id="inventory-list"></tbody>
-    </table>
-  </div>
-
-  <!-- LIBRO DIARIO DE TRANSACCIONES (CONTABILIDAD Y PDF SEMANAL EXCLUSIVO SUPERVISOR) -->
-  <div id="libro-diario-section" class="hidden" style="margin-top: 30px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid #1e7e34; padding-bottom: 8px; margin-bottom: 10px;">
-      <h3 style="margin: 0; color: #1e7e34;">📖 Libro Diario de Transacciones (Contabilidad y Movimientos)</h3>
-      <!-- BOTÓN RESTRINGIDO EXCLUSIVAMENTE A SUPERVISOR -->
-      <button id="btn-descargar-diario-pdf" class="btn-success hidden" style="width: auto; padding: 8px 15px; font-size: 13px;" onclick="exportarLibroDiarioPDFSemanal()">📥 Descargar PDF Semanal y Limpiar (Supervisor)</button>
-    </div>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Fecha y Hora</th>
-            <th>Tipo de Operación</th>
-            <th>Detalle / Ítem</th>
-            <th>Cantidad / Monto</th>
-            <th>Usuario Responsable</th>
-          </tr>
-        </thead>
-        <tbody id="libro-diario-list">
-          <tr><td colspan="5" style="text-align:center;">No hay transacciones registradas en el libro diario.</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- CHECK-IN -->
-<div id="subpage-checkin" class="hidden">
-  <h3>🛎️ Módulo Avanzado de Check-In</h3>
-  <div style="background: #fdfefe; padding: 15px; border: 1px solid #0056b3; border-radius: 6px;">
-    <label><strong>1. Habitación Disponible:</strong></label>
-    <select id="ci-room-select" onchange="mostrarTarifasHabitacion()"></select>
-    
-    <div id="tarifa-preview-box" style="background: #eef5fc; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 13px; border: 1px dashed #0056b3;">
-      <em>Selecciona un cuarto.</em>
-    </div>
-
-    <div>
-      <label><strong>2. Tiempo de Alquiler:</strong></label>
-      <select id="ci-tipo-tarifa">
-        <option value="1HORA">⏱️ 1 Hora</option>
-        <option value="3HORAS">⏱️ 3 Horas</option>
-        <option value="NOCHE">🌙 Noche</option>
-        <option value="DIA">☀️ Día (24 Horas)</option>
-        <option value="SEMANA">📅 Semana</option>
-      </select>
-    </div>
-
-    <div class="grid" style="gap: 10px; margin-top: 5px;">
-      <div><label><strong>Nombres:</strong></label><input type="text" id="ci-nombres"></div>
-      <div><label><strong>Apellidos:</strong></label><input type="text" id="ci-apellidos"></div>
-    </div>
-
-    <div class="grid" style="gap: 10px;">
-      <div><label><strong>Nacionalidad:</strong></label><input type="text" id="ci-nacionalidad" value="Venezolana"></div>
-      <div><label><strong>Cédula / Pasaporte:</strong></label><input type="text" id="ci-doc"></div>
-    </div>
-
-    <div class="grid" style="gap: 10px;">
-      <div><label><strong>Teléfono:</strong></label><input type="text" id="ci-telefono"></div>
-      <div><label><strong>Correo (Gmail):</strong></label><input type="email" id="ci-gmail"></div>
-    </div>
-
-    <button class="btn-success" style="margin-top: 15px;" onclick="ejecutarCheckInFormal()">✅ Confirmar Check-In & Imprimir Recibo PDF</button>
-  </div>
-</div>
-
-<!-- POS / ESCÁNER / CARRITO UNIFICADO -->
-<div id="subpage-pos" class="hidden">
-  <h3>🛒 POS, Escáner Inteligente & Carrito de Compras</h3>
-  
-  <div class="scanner-kiosk-box" style="margin-bottom: 20px;">
-    <label style="font-weight: bold; color: #1e7e34;">🏷️ Escanear o Buscar Producto por SKU:</label>
-    <div style="display: flex; gap: 8px;">
-      <input type="text" id="scanner-input" placeholder="Ej: SKU-001..." oninput="buscarProductoPorEscanner(this.value)" style="margin: 0; background: #fff; font-weight: bold;">
-      <button class="btn-success" style="width: auto; margin: 0; padding: 0 20px;" onclick="simularLecturaRapida()">📷 Simular</button>
-    </div>
-    <div id="scanned-result-container" class="hidden scanned-product-preview">
-      <img id="scnd-img" src="" style="width: 70px; height: 70px; object-fit: cover; border-radius: 6px;">
-      <div style="flex: 1;">
-        <h4 id="scnd-name" style="margin: 0 0 4px 0;">--</h4>
-        <p id="scnd-info" style="margin: 0; font-size: 13px;">--</p>
+      <div class="grid" style="gap:5px; margin-top:5px;">
+        <div><label><small>USDT / Cripto (Bs):</small></label><input type="number" id="inp-usdt" step="0.01"></div>
+        <div><label><small>Bitcoin ($ USD):</small></label><input type="text" id="inp-btc"></div>
       </div>
-      <button class="btn-success" style="padding: 8px; font-size: 13px;" onclick="agregarEscaneadoAlCarritoDesdeVista()">Agregar al Carrito</button>
+      <button class="btn-success" style="margin-top: 8px; padding: 8px;" onclick="guardarTasasCuenta()">💾 Guardar Tasas</button>
     </div>
   </div>
 
-  <div class="cart-container">
-    <div class="grid" style="gap: 10px;">
-      <div>
-        <label><strong>Seleccionar Producto / Servicio:</strong></label>
-        <select id="cart-prod-select" style="background: #f8f9fa; font-weight: bold;"></select>
-      </div>
-      <div>
-        <label><strong>Cantidad:</strong></label>
-        <input type="number" id="cart-qty" value="1" min="1">
-      </div>
-    </div>
-    <button class="btn-success" style="margin-top: 10px;" onclick="agregarAlCarrito()">➕ Agregar al Carrito</button>
-
-    <h4 style="margin-top: 20px; border-bottom: 2px solid #28a745; padding-bottom: 5px;">Artículos en el Carrito</h4>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th>Ítem</th>
-            <th>Precio Unit. ($)</th>
-            <th>Cant.</th>
-            <th>Subtotal ($)</th>
-            <th>Acción</th>
-          </tr>
-        </thead>
-        <tbody id="cart-items-table">
-          <tr><td colspan="5" style="text-align:center;">El carrito está vacío.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-top: 15px; text-align: right;">
-      <p style="margin: 4px 0; font-size: 16px;"><strong>Total en Dólares ($):</strong> <span id="cart-total-usd" style="color: #28a745; font-size: 20px;">$0.00</span></p>
-      <p style="margin: 4px 0; font-size: 16px;"><strong>Total en Bolívares (Bs):</strong> <span id="cart-total-bs" style="color: #0056b3; font-size: 20px;">0.00 Bs</span></p>
-      <button class="btn-success" style="margin-top: 10px; width: auto; padding: 12px 25px;" onclick="procesarCompraCarrito()">💳 Procesar Venta</button>
-    </div>
-  </div>
-</div>
-
-<!-- MÓDULO DE CUENTAS POR COBRAR (CxC) ESTILO CARRITO -->
-<div id="subpage-cxc" class="hidden">
-  <h3>💳 Módulo de Cuentas por Cobrar (CxC) con Descuento de Inventario</h3>
-  <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da; margin-bottom: 20px;">
-    <h4 style="margin-top:0; color:#1e7e34;">➕ Registrar Crédito y Seleccionar Productos</h4>
-    <div class="grid" style="gap: 10px;">
-      <div><label><small>Nombre del Cliente:</small></label><input type="text" id="cxc-cliente" placeholder="Ej: Juan Pérez"></div>
-      <div><label><small>Cédula / RIF:</small></label><input type="text" id="cxc-doc" placeholder="Ej: V-12345678"></div>
-    </div>
-    <div class="grid" style="gap: 10px; margin-top: 5px;">
-      <div><label><small>Seleccionar Producto del Inventario:</small></label><select id="cxc-prod-select" style="font-weight:bold;"></select></div>
-      <div><label><small>Cantidad:</small></label><input type="number" id="cxc-qty" value="1" min="1"></div>
-    </div>
-    <button class="btn-warning" style="margin-top: 5px;" onclick="agregarItemCxC()">➕ Agregar Ítem al Crédito</button>
-
-    <h5 style="margin-top: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Artículos seleccionados para el crédito:</h5>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr><th>Producto</th><th>Precio Unit. ($)</th><th>Cant.</th><th>Subtotal ($)</th><th>Acción</th></tr>
-        </thead>
-        <tbody id="cxc-items-table">
-          <tr><td colspan="5" style="text-align:center;">No hay artículos agregados al crédito.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div style="text-align: right; margin-top: 10px;">
-      <p style="font-size: 16px; margin: 5px 0;"><strong>Total del Crédito ($):</strong> <span id="cxc-total-usd" style="color: #dc3545; font-size: 18px;">$0.00</span></p>
-      <button class="btn-success" style="width: auto; padding: 12px 25px; margin-top: 5px;" onclick="registrarCxCFinal()">💾 Guardar CxC & Descontar Inventario</button>
-    </div>
+  <div class="license-status-box">
+    <div>🛡️ <strong>Estado de Cuenta:</strong> <span id="display-account-status" style="color: #385723; font-weight: bold;">ACTIVO</span></div>
+    <div>⏳ <strong>Vencimiento Licencia:</strong> <span id="display-license-expiry" style="font-weight: bold;">2030-12-04</span></div>
   </div>
 
-  <div style="overflow-x: auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Fecha</th>
-          <th>Cliente</th>
-          <th>Detalle de Artículos</th>
-          <th>Deuda Total ($)</th>
-          <th>Abonado ($)</th>
-          <th>Pendiente ($)</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody id="cxc-table-list">
-        <tr><td colspan="7" style="text-align:center;">No hay cuentas por cobrar registradas.</td></tr>
-      </tbody>
-    </table>
+  <!-- NAVEGACIÓN DE MÓDULOS ACTIVOS -->
+  <div id="hotel-nav" class="nav-tabs">
+    <button id="h-tab-rooms" class="active" onclick="switchHotelTab('rooms')">🛏️ Cuartos</button>
+    <button id="h-tab-checkin" onclick="switchHotelTab('checkin')">🛎️ Check-In</button>
+    <button id="h-tab-album" onclick="switchHotelTab('album')">📸 Fotos y Tarifas</button>
+    <button id="h-tab-occupied" onclick="switchHotelTab('occupied')">📋 Huéspedes Activos</button>
   </div>
-</div>
 
-<!-- ÁLBUM -->
-<div id="subpage-album" class="hidden">
-  <h3 id="album-main-title">🖼️ Catálogo Visual</h3>
-  <div id="album-container" class="album-grid"></div>
-</div>
-
-<!-- HUÉSPEDES / STOCK BAJO -->
-<div id="subpage-lowstock" class="hidden">
-  <h3 id="lowstock-main-title">📋 Control de Activos</h3>
-  <div style="overflow-x: auto;">
-    <table>
-    <thead>
-    <tr id="sec-th-list"></tr>
-    </thead>
-    <tbody id="lowstock-list"></tbody>
-    </table>
+  <div id="comercio-nav" class="nav-tabs hidden">
+    <button id="c-tab-inv" class="active" onclick="switchComercioTab('inv')">📦 Inventario & Libro Diario</button>
+    <button id="c-tab-pos" onclick="switchComercioTab('pos')">🛒 POS & Carrito</button>
+    <button id="c-tab-cxc" onclick="switchComercioTab('cxc')">💳 Cuentas por Cobrar (CxC)</button>
+    <button id="c-tab-album" onclick="switchComercioTab('album')">📸 Galería</button>
+    <button id="c-tab-low" onclick="switchComercioTab('low')">⚠️ Alertas Stock</button>
   </div>
-</div>
 
-<hr>
+  <!-- CONTENEDORES DE MÓDULOS CARGADOS DE FORMA INDEPENDIENTE -->
+  <div id="modulo-hotel-container"></div>
+  <div id="modulo-comercio-container" class="hidden"></div>
+  <div id="modulo-citas-container" class="hidden"></div>
+  <div id="modulo-referidos-container" class="hidden"></div>
 
-<!-- FORMULARIO NUEVO -->
-<div class="grid" id="container-actions-form">
-  <div style="width: 100%;">
-    <h3 id="form-create-title">1. Registrar Nuevo Elemento</h3>
-    <input type="text" id="prod-barcode" placeholder="Código / SKU / ID">
-    <input type="text" id="prod-name" placeholder="Nombre / Descripción">
-    
-    <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0; text-align: center;">
-      <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">📸 Imagen del Producto (Archivo / Cámara / URL):</label>
-      
-      <div class="grid" style="gap: 5px; margin-bottom: 8px;">
-        <button type="button" class="btn-success" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-file').click()">📁 Subir Archivo (JPG / PNG)</button>
-        <button type="button" class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-camera').click()">📷 Tomar Foto con Cámara</button>
-      </div>
-
-      <!-- Inputs ocultos para archivo y cámara -->
-      <input type="file" id="prod-img-file" accept="image/png, image/jpeg, image/jpg, image/webp" style="display:none;" onchange="procesarImagenSeleccionada(event)">
-      <input type="file" id="prod-img-camera" accept="image/*" capture="environment" style="display:none;" onchange="procesarImagenSeleccionada(event)">
-
-      <input type="text" id="prod-img" placeholder="O ingresa enlace / URL de imagen..." onchange="actualizarPreviaUrl(this.value)">
-
-      <div id="img-preview-box" style="margin-top: 8px; display: none;">
-        <small style="display:block; color:#555;">Vista previa:</small>
-        <img id="img-preview-tag" src="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; margin-top: 4px;">
-        <br>
-        <button type="button" style="background:#dc3545; color:white; border:none; padding:3px 10px; border-radius:4px; font-size:11px; margin-top:4px; width:auto;" onclick="limpiarImagenCargada()">❌ Quitar Foto</button>
-      </div>
+  <!-- AUDITORÍA Y GRÁFICOS -->
+  <div id="subpage-audit" class="hidden">
+    <h3>📊 Auditoría Unificada de Negocios y Gráficos de Ventas</h3>
+    <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ced4da;">
+      <h4 style="margin-top:0; color:#0056b3;">📈 Gráfico General de Ventas por Empresa</h4>
+      <canvas id="graficoVentasSupervisor" style="max-height: 300px; width: 100%;"></canvas>
     </div>
+    <div id="audit-cards-container" class="grid" style="gap: 15px; margin-top: 15px;"></div>
+  </div>
 
-    
-    <div id="hotel-dynamic-form">
-      <div class="grid" style="gap: 5px;">
-        <input type="number" id="room-camas" placeholder="Camas" value="1">
-        <input type="number" id="room-banos" placeholder="Baños" value="1">
-      </div>
-      <input type="text" id="room-desc" placeholder="Comodidades">
-      <div class="grid" style="gap: 5px;">
-        <input type="number" id="price-1h" placeholder="1 Hora ($)" step="0.01">
-        <input type="number" id="price-3h" placeholder="3 Horas ($)" step="0.01">
-      </div>
-      <div class="grid" style="gap: 5px;">
-        <input type="number" id="price-noche" placeholder="Noche ($)" step="0.01">
-        <input type="number" id="price-dia" placeholder="Día ($)" step="0.01">
-      </div>
-      <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
+  <!-- ANÁLISIS & BI -->
+  <div id="subpage-analytics" class="hidden">
+    <h3>📈 Análisis de Datos y Recomendaciones BI</h3>
+    <div style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
+      <label style="font-weight: bold; font-size: 13px;">🏢 Seleccionar Comercio:</label>
+      <select id="analytics-target-biz" onchange="mostrarAnalyticAndRecommendations()" style="font-weight: bold; color: #0056b3; margin-top: 5px;"></select>
     </div>
-
-    <div id="comercio-dynamic-form" class="hidden">
-      <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
-      <div class="grid" style="gap: 5px;">
-        <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">
-      </div>
-    </div>
-
-    <button class="btn-success" style="margin-top: 10px;" onclick="createProd()">Guardar Elemento</button>
+    <div id="analytics-content-container"></div>
   </div>
-</div>
 
-<br>
-<button onclick="logoutApp()" style="background-color: #6c757d; width: auto;">🚪 Cerrar Sesión</button>
-</div>
-
-<!-- WIDGET FLOTANTE DE CHAT DE IA MICHAEL -->
-<button class="gams-ai-chat-btn" onclick="toggleGamsAIChat()" title="Asistente Michael GAMS">🤖</button>
-
-<div id="gams-ai-chat-window" class="gams-ai-chat-window hidden">
-  <div class="gams-ai-chat-header">
-    <span>🤖 Michael - GAMS</span>
-    <button style="background:none; border:none; color:white; font-size:16px; cursor:pointer; width:auto; padding:0;" onclick="toggleGamsAIChat()">✖</button>
-  </div>
-  <div id="gams-ai-chat-body" class="gams-ai-chat-body">
-    <div class="gams-ai-msg assistant">¡Hola! ¿Cómo estás? Puedo ayudarte con cualquier consulta o problema que tengas relacionado con GAMS Company. ¿En qué puedo ser de ayuda hoy?</div>
-  </div>
-  <div class="gams-ai-chat-footer">
-    <input type="text" id="gams-ai-input" placeholder="Pregunta sobre precios o cuentas..." onkeypress="if(event.key === 'Enter') enviarPreguntaGamsAI()">
-    <button class="btn-success" onclick="enviarPreguntaGamsAI()">Enviar</button>
-  </div>
-</div>
-
-<script>
-  const hotelFirebaseConfig = {
-    apiKey: "AIzaSyDRavKFUBrMVE5YZUXTuieTuOkUWz4JWyo",
-    authDomain: "gams-hoteleria.firebaseapp.com",
-    projectId: "gams-hoteleria",
-    storageBucket: "gams-hoteleria.firebasestorage.app",
-    messagingSenderId: "503951137385",
-    appId: "1:503951137385:web:4a3e12968af81c9078a0f8",
-    measurementId: "G-DSKQ9LWB2Y"
-  };
-
-  const oldFirebaseConfig = {
-    apiKey: "AIzaSyDRavKFUBrMVE5YZUXTuieTuOkUWz4JWyo",
-    authDomain: "gams-hoteleria.firebaseapp.com",
-    projectId: "gams-hoteleria", 
-    storageBucket: "gams-hoteleria.firebasestorage.app",
-    messagingSenderId: "503951137385",
-    appId: "1:503951137385:web:4a3e12968af81c9078a0f8",
-    measurementId: "G-DSKQ9LWB2Y"
-  };
-
-  const appHotel = firebase.initializeApp(hotelFirebaseConfig, "appHotelInstance");
-  const appOld = firebase.initializeApp(oldFirebaseConfig, "appOldInstance");
-
-  const dbHotel = firebase.firestore(appHotel);
-  const dbOld = firebase.firestore(appOld);
-
-  let userRole = "";
-  let activeModule = "HOTEL"; 
-  let currentAccountKey = "hotel_mama1"; 
-  let unsubscribeRealtime = null; 
-  let cartItems = [];
-  let cxcCartItems = [];
-  let chartSupervisorInstance = null;
-  const defaultImgPlaceholder = "https://cdn-icons-png.flaticon.com/512/679/679821.png";
-
-  function calcularFechaLicenciaUnMesDia4() {
-    let d = new Date();
-    d.setMonth(d.getMonth() + 1);
-    d.setDate(4);
-    return d.toISOString().split('T')[0];
-  }
-
-  const defaultNegocios = [
-    { 
-      id: "hotel_costa_real", 
-      bizName: "Hotel Costa Real", 
-      type: "Hotelería", 
-      dbTarget: "NUEVA", 
-      adminKey: "hotel_mama1", adminPass: "mama1", 
-      empKey: "hotel_empleado1", empPass: "empleado1", 
-      status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() 
-    },
-    { 
-      id: "comercio_abastos_gams", 
-      bizName: "Comercializadora & Abastos GAMS", 
-      type: "Inventario / Comercio", 
-      dbTarget: "VIEJA", 
-      adminKey: "comercio_comercio123", adminPass: "comercio123", 
-      empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", 
-      status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() 
-    }
-  ];
-
-  let negociosRegistry = [];
-
-  function obtenerIdentificadorRaizNegocio(key) {
-    let neg = negociosRegistry.find(n => n.adminKey === key || n.empKey === key);
-    if (neg) return neg.adminKey;
-    return key;
-  }
-
-  function actualizarEstadoConexion() {
-    const badge = document.getElementById("sync-status-badge");
-    if (!badge) return;
-    if (navigator.onLine) {
-      badge.className = "sync-status sync-online";
-      badge.innerText = "☁️ Conectado a Firebase";
-      sincronizarDatosPendientesOffline();
-    } else {
-      badge.className = "sync-status sync-offline";
-      badge.innerText = "📴 Modo Offline (Guardando Localmente)";
-    }
-  }
-
-  window.addEventListener('online', actualizarEstadoConexion);
-  window.addEventListener('offline', actualizarEstadoConexion);
-
-  async function getDbForBusiness(accountKey) {
-    let neg = negociosRegistry.find(n => n.adminKey === accountKey || n.empKey === accountKey);
-    if (neg && neg.dbTarget === "VIEJA") return dbOld;
-    return (activeModule === "HOTEL") ? dbHotel : (neg && neg.type === "Inventario / Comercio" ? dbOld : dbHotel);
-  }
-
-  async function getDbItems(key) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let localKey = `gams_items_${raizKey}`;
-    let localData = localStorage.getItem(localKey);
-    
-    if (!navigator.onLine) {
-      return localData ? JSON.parse(localData) : [];
-    }
-
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      let targetCollection = (activeModule === "HOTEL") ? "hotelería" : "gams_db";
-      let targetDocId = (activeModule === "HOTEL") ? "hoteles" : raizKey;
-
-      let doc = await activeDb.collection(targetCollection).doc(targetDocId).get();
-      if (doc.exists) {
-        let items = doc.data().items || [];
-        localStorage.setItem(localKey, JSON.stringify(items));
-        return items;
-      }
-    } catch(e) {
-      if (localData) return JSON.parse(localData);
-    }
-    return localData ? JSON.parse(localData) : [];
-  }
-
-  async function saveDbItems(key, items) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let localKey = `gams_items_${raizKey}`;
-    localStorage.setItem(localKey, JSON.stringify(items));
-
-    if (!navigator.onLine) {
-      let pendientes = JSON.parse(localStorage.getItem("gams_offline_queue") || "[]");
-      pendientes.push({ key: raizKey, items, timestamp: Date.now() });
-      localStorage.setItem("gams_offline_queue", JSON.stringify(pendientes));
-      return;
-    }
-
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      if (activeModule === "HOTEL") {
-        await activeDb.collection("hotelería").doc("hoteles").set({ hotel: "123", items }, { merge: true });
-      } else {
-        await activeDb.collection("gams_db").doc(raizKey).set({ tipo: "comercio", items }, { merge: true });
-      }
-    } catch(e) {
-      console.error("Error guardando en Firestore:", e);
-    }
-  }
-
-  async function getLibroDiario(key) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let localKey = `gams_diario_${raizKey}`;
-    let localData = localStorage.getItem(localKey);
-    if (!navigator.onLine) return localData ? JSON.parse(localData) : [];
-
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      let doc = await activeDb.collection("gams_diario").doc(raizKey).get();
-      if (doc.exists) {
-        let transacciones = doc.data().transacciones || [];
-        localStorage.setItem(localKey, JSON.stringify(transacciones));
-        return transacciones;
-      }
-    } catch(e) {
-      if (localData) return JSON.parse(localData);
-    }
-    return localData ? JSON.parse(localData) : [];
-  }
-
-  async function registrarTransaccionDiaria(key, tipo, detalle, monto) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let transacciones = await getLibroDiario(raizKey);
-    let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (currentAccountKey.includes("admin") ? "Administrador" : "Empleado");
-    
-    transacciones.unshift({
-      fecha: new Date().toLocaleString(),
-      tipo: tipo,
-      detalle: detalle,
-      monto: monto,
-      usuario: usuarioActual
-    });
-
-    let localKey = `gams_diario_${raizKey}`;
-    localStorage.setItem(localKey, JSON.stringify(transacciones));
-
-    if (navigator.onLine) {
-      try {
-        let activeDb = await getDbForBusiness(raizKey);
-        await activeDb.collection("gams_diario").doc(raizKey).set({ transacciones });
-      } catch(e) {
-        console.error("Error guardando libro diario en Firestore:", e);
-      }
-    }
-  }
-
-  window.exportarLibroDiarioPDFSemanal = async function() {
-    if (userRole !== "SUPERVISOR") return alert("Acceso restringido: Solo la cuenta de supervisor puede descargar los datos de las cuentas.");
-
-    let transacciones = await getLibroDiario(currentAccountKey);
-    if (transacciones.length === 0) return alert("No hay transacciones en el libro diario para exportar.");
-
-    let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
-    let nombreNegocio = neg ? neg.bizName : "GAMS Company";
-
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFont("times", "bold");
-    doc.setFontSize(16);
-    doc.text(`LIBRO DIARIO DE TRANSACCIONES (SEMANAL)`, 14, 20);
-    doc.setFontSize(11);
-    doc.setFont("times", "normal");
-    doc.text(`Caracas, Venezuela | Fecha: ${new Date().toLocaleString()}`, 14, 27);
-    doc.text(`Negocio: ${nombreNegocio} | Emisor: Gibrand Marron (CI: 32751191)`, 14, 34);
-
-    let y = 46;
-    doc.setFont("times", "bold");
-    doc.text("Fecha", 14, y);
-    doc.text("Tipo", 50, y);
-    doc.text("Detalle", 90, y);
-    doc.text("Monto ($)", 170, y);
-    doc.line(14, y + 2, 196, y + 2);
-
-    y += 8;
-    doc.setFont("times", "normal");
-    let totalMontoSemanal = 0;
-
-    transacciones.forEach(t => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      totalMontoSemanal += t.monto;
-      doc.text(t.fecha.substring(0, 16), 14, y);
-      doc.text(t.tipo.substring(0, 18), 50, y);
-      doc.text(t.detalle.substring(0, 45), 90, y);
-      doc.text(`$${t.monto.toFixed(2)}`, 170, y);
-      y += 7;
-    });
-
-    y += 5;
-    doc.line(14, y, 196, y);
-    y += 8;
-    doc.setFont("times", "bold");
-    doc.text(`Total Registrado en la Semana: $${totalMontoSemanal.toFixed(2)}`, 14, y);
-
-    doc.save(`Libro_Diario_Semanal_${nombreNegocio.replace(/\s+/g, '_')}.pdf`);
-
-    if (confirm("¿Desea limpiar los registros actuales del libro diario para liberar memoria y reiniciar el ciclo semanal?")) {
-      let raizKey = obtenerIdentificadorRaizNegocio(currentAccountKey);
-      let localKey = `gams_diario_${raizKey}`;
-      localStorage.setItem(localKey, JSON.stringify([]));
-      if (navigator.onLine) {
-        let activeDb = await getDbForBusiness(raizKey);
-        await activeDb.collection("gams_diario").doc(raizKey).set({ transacciones: [] });
-      }
-      actualizarLibroDiarioEnVista();
-      alert("✅ Memoria de registros semanales limpiada con éxito.");
-    }
-  }
-
-  // MÓDULO CXC ESTILO CARRITO CON DESCUENTO DE INVENTARIO
-  async function getCxCData(key) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let localKey = `gams_cxc_${raizKey}`;
-    let local = localStorage.getItem(localKey);
-    if (!navigator.onLine) return local ? JSON.parse(local) : [];
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      let doc = await activeDb.collection("gams_cxc").doc(raizKey).get();
-      if (doc.exists) {
-        let cxc = doc.data().cxc || [];
-        localStorage.setItem(localKey, JSON.stringify(cxc));
-        return cxc;
-      }
-    } catch(e) { if (local) return JSON.parse(local); }
-    return local ? JSON.parse(local) : [];
-  }
-
-  async function saveCxCData(key, cxc) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    localStorage.setItem(`gams_cxc_${raizKey}`, JSON.stringify(cxc));
-    if (!navigator.onLine) return;
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      await activeDb.collection("gams_cxc").doc(raizKey).set({ cxc });
-    } catch(e) { console.error(e); }
-  }
-
-  async function cargarSelectCxCProductos() {
-    const sel = document.getElementById("cxc-prod-select");
-    if (!sel) return;
-    sel.innerHTML = "";
-    let curr = await getDbItems(currentAccountKey);
-    if (curr.length === 0) {
-      sel.innerHTML = '<option value="">-- No hay productos en inventario --</option>';
-      return;
-    }
-    curr.forEach((item, idx) => {
-      let precio = item.priceUsd || item.pNoche || 0;
-      sel.innerHTML += `<option value="${idx}">[${item.barcode}] ${item.name} - Stock: ${item.stock} - $${precio.toFixed(2)}</option>`;
-    });
-  }
-
-  window.agregarItemCxC = async function() {
-    const selIdx = document.getElementById("cxc-prod-select").value;
-    const qty = parseInt(document.getElementById("cxc-qty").value) || 1;
-    if (selIdx === "") return alert("Selecciona un producto.");
-
-    let curr = await getDbItems(currentAccountKey);
-    let prod = curr[selIdx];
-    let precio = prod.priceUsd || prod.pNoche || 0;
-
-    if (prod.stock < qty) return alert(`Stock insuficiente. Solo hay ${prod.stock} unidades.`);
-
-    let existente = cxcCartItems.find(i => i.barcode === prod.barcode);
-    if (existente) {
-      if (prod.stock < (existente.qty + qty)) return alert("Stock insuficiente para agregar más.");
-      existente.qty += qty;
-    } else {
-      cxcCartItems.push({ barcode: prod.barcode, name: prod.name, price: precio, qty: qty, originalIndex: selIdx });
-    }
-    renderizarCxCCarrito();
-  }
-
-  function renderizarCxCCarrito() {
-    const tbody = document.getElementById("cxc-items-table");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    if (cxcCartItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay artículos agregados al crédito.</td></tr>';
-      document.getElementById("cxc-total-usd").innerText = "$0.00";
-      return;
-    }
-
-    let totalUsd = 0;
-    cxcCartItems.forEach((item, idx) => {
-      let sub = item.price * item.qty;
-      totalUsd += sub;
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${item.name}</strong><br><small>SKU: ${item.barcode}</small></td>
-          <td>$${item.price.toFixed(2)}</td>
-          <td>${item.qty}</td>
-          <td>$${sub.toFixed(2)}</td>
-          <td><button class="btn-delete" onclick="eliminarItemCxCCarrito(${idx})">🗑️</button></td>
-        </tr>`;
-    });
-    document.getElementById("cxc-total-usd").innerText = `$${totalUsd.toFixed(2)}`;
-  }
-
-  window.eliminarItemCxCCarrito = function(idx) {
-    cxcCartItems.splice(idx, 1);
-    renderizarCxCCarrito();
-  }
-
-  window.registrarCxCFinal = async function() {
-    const cliente = document.getElementById("cxc-cliente").value.trim();
-    const doc = document.getElementById("cxc-doc").value.trim();
-    if (!cliente) return alert("Ingresa el nombre del cliente.");
-    if (cxcCartItems.length === 0) return alert("Agrega al menos un artículo al crédito.");
-
-    let curr = await getDbItems(currentAccountKey);
-    let montoTotal = 0;
-    let detalleResumen = [];
-
-    for (let item of cxcCartItems) {
-      let prod = curr[item.originalIndex];
-      if (prod) {
-        if (prod.stock < item.qty) return alert(`Stock agotado para "${prod.name}".`);
-        prod.stock -= item.qty;
-        let sub = item.price * item.qty;
-        montoTotal += sub;
-        detalleResumen.push(`${item.qty}x ${item.name}`);
-      }
-    }
-
-    await saveDbItems(currentAccountKey, curr);
-
-    let cxcList = await getCxCData(currentAccountKey);
-    cxcList.unshift({
-      id: Date.now(),
-      fecha: new Date().toLocaleDateString(),
-      cliente, doc,
-      concepto: detalleResumen.join(", "),
-      montoTotal, abonado: 0
-    });
-
-    await saveCxCData(currentAccountKey, cxcList);
-    await registrarTransaccionDiaria(currentAccountKey, "NUEVA CXC (CRÉDITO)", `Crédito a ${cliente}: ${detalleResumen.join(", ")}`, montoTotal);
-
-    document.getElementById("cxc-cliente").value = "";
-    document.getElementById("cxc-doc").value = "";
-    cxcCartItems = [];
-    renderizarCxCCarrito();
-    cargarCxCTabla();
-    alert("✅ Cuenta por cobrar registrada e inventario descontado con éxito.");
-  }
-
-  async function cargarCxCTabla() {
-    const tbody = document.getElementById("cxc-table-list");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-    let cxcList = await getCxCData(currentAccountKey);
-
-    if (cxcList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No hay cuentas por cobrar registradas.</td></tr>';
-      return;
-    }
-
-    cxcList.forEach((item, idx) => {
-      let pendiente = item.montoTotal - item.abonado;
-      tbody.innerHTML += `
-        <tr>
-          <td><small>${item.fecha}</small></td>
-          <td><strong>${item.cliente}</strong><br><small>${item.doc || ''}</small></td>
-          <td>${item.concepto}</td>
-          <td>$${item.montoTotal.toFixed(2)}</td>
-          <td>$${item.abonado.toFixed(2)}</td>
-          <td><strong style="color: ${pendiente > 0 ? '#dc3545' : '#28a745'};">$${pendiente.toFixed(2)}</strong></td>
-          <td>
-            ${pendiente > 0 ? `<button class="btn-success" style="padding:6px; font-size:11px;" onclick="abonarCxC(${idx})">Abonar</button>` : '<span class="badge" style="background:#28a745;">Pagado</span>'}
-          </td>
-        </tr>`;
-    });
-  }
-
-  window.abonarCxC = async function(idx) {
-    let cxcList = await getCxCData(currentAccountKey);
-    let item = cxcList[idx];
-    let pendiente = item.montoTotal - item.abonado;
-    let abonoStr = prompt(`Ingrese monto a abonar (Pendiente: $${pendiente.toFixed(2)}):`, pendiente.toFixed(2));
-    if (!abonoStr) return;
-    let abono = parseFloat(abonoStr) || 0;
-    if (abono <= 0 || abono > pendiente) return alert("Monto de abono inválido.");
-
-    item.abonado += abono;
-    await saveCxCData(currentAccountKey, cxcList);
-    await registrarTransaccionDiaria(currentAccountKey, "ABONO CXC", `Abono de ${item.cliente}`, abono);
-    cargarCxCTabla();
-    alert("✅ Abono registrado correctamente.");
-  }
-
-  async function sincronizarDatosPendientesOffline() {
-    let pendientes = JSON.parse(localStorage.getItem("gams_offline_queue") || "[]");
-    if (pendientes.length === 0) return;
-    for (let p of pendientes) {
-      try {
-        let activeDb = await getDbForBusiness(p.key);
-        if (activeModule === "HOTEL") {
-          await activeDb.collection("hotelería").doc("hoteles").set({ hotel: "123", items: p.items }, { merge: true });
-        } else {
-          await activeDb.collection("gams_db").doc(p.key).set({ tipo: "comercio", items: p.items }, { merge: true });
-        }
-      } catch (e) { console.error(e); }
-    }
-    localStorage.removeItem("gams_offline_queue");
-  }
-
-  async function getTasas(key) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    let localKey = `gams_tasas_${raizKey}`;
-    let local = localStorage.getItem(localKey);
-    if (!navigator.onLine && local) return JSON.parse(local);
-
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      let doc = await activeDb.collection("gams_tasas").doc(raizKey).get();
-      if (doc.exists) {
-        let data = doc.data();
-        localStorage.setItem(localKey, JSON.stringify(data));
-        return data;
-      }
-    } catch(e) {
-      if (local) return JSON.parse(local);
-    }
-    return { dolar: 36.50, euro: 39.20, usdt: 36.85, btc: "$91,400" };
-  }
-
-  async function saveTasas(key, tasas) {
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    localStorage.setItem(`gams_tasas_${raizKey}`, JSON.stringify(tasas));
-    if (!navigator.onLine) return;
-    try {
-      let activeDb = await getDbForBusiness(raizKey);
-      await activeDb.collection("gams_tasas").doc(raizKey).set(tasas);
-    } catch(e) { console.error(e); }
-  }
-
-  async function initFirebaseData() {
-    let localReg = localStorage.getItem("gams_negocios_registry");
-    negociosRegistry = localReg ? JSON.parse(localReg) : defaultNegocios;
-
-    try {
-      let docRef = dbHotel.collection("gams_system").doc("registry");
-      let doc = await docRef.get();
-      if (!doc.exists) {
-        await docRef.set({ negocios: defaultNegocios });
-        negociosRegistry = defaultNegocios;
-      } else if (doc.data().negocios && doc.data().negocios.length > 0) {
-        negociosRegistry = doc.data().negocios;
-      }
-      localStorage.setItem("gams_negocios_registry", JSON.stringify(negociosRegistry));
-    } catch (e) {
-      console.warn("Usando registro local:", e);
-    }
-  }
-
-  async function saveNegociosRegistry(list) {
-    negociosRegistry = list;
-    localStorage.setItem("gams_negocios_registry", JSON.stringify(list));
-    if (navigator.onLine) {
-      await dbHotel.collection("gams_system").doc("registry").set({ negocios: list });
-    }
-  }
-
-  function iniciarSincronizacionEnTiempoReal(key) {
-    if (unsubscribeRealtime) unsubscribeRealtime(); 
-    if (!navigator.onLine) return;
-
-    let raizKey = obtenerIdentificadorRaizNegocio(key);
-    getDbForBusiness(raizKey).then(activeDb => {
-      let targetCollection = (activeModule === "HOTEL") ? "hotelería" : "gams_db";
-      let targetDocId = (activeModule === "HOTEL") ? "hoteles" : raizKey;
-
-      unsubscribeRealtime = activeDb.collection(targetCollection).doc(targetDocId)
-        .onSnapshot((docSnapshot) => {
-          if (docSnapshot.exists) refrescarInterfazActual();
-        }, (error) => { console.error(error); });
-    });
-  }
-
-  window.addEventListener('DOMContentLoaded', async () => {
-    await initFirebaseData();
-    actualizarEstadoConexion();
-
-    const savedRole = localStorage.getItem("gams_user_role");
-    const savedMod = localStorage.getItem("gams_active_module");
-    const savedAcc = localStorage.getItem("gams_current_account");
-
-    poblarSelectoresSupervisores();
-    poblarSelectAnalyticsBiz();
-
-    if (savedRole) {
-      userRole = savedRole;
-      activeModule = savedMod || "HOTEL";
-      currentAccountKey = savedAcc || "hotel_mama1";
-
-      document.getElementById("license-screen").classList.add("hidden");
-      document.getElementById("app-screen").classList.remove("hidden");
-      
-      await cargarTasasEnPantalla();
-      applyModuleTheme();
-      configUI();
-
-      iniciarSincronizacionEnTiempoReal(currentAccountKey);
-
-      if (activeModule === "HOTEL") switchHotelTab('rooms');
-      else if (activeModule === "COMERCIO") switchComercioTab('inv');
-      else if (activeModule === "AUDIT") mostrarPanelAuditoriaTasas();
-      else if (activeModule === "ANALYTICS") mostrarAnalyticAndRecommendations();
-      else if (activeModule === "ACCOUNTS") mostrarGestionCuentas();
-    }
-  });
-
-  function refrescarInterfazActual() {
-    if (activeModule === "HOTEL") {
-      let activeTab = document.querySelector("#hotel-nav button.active");
-      if (activeTab && activeTab.id === "h-tab-rooms") updateTbl();
-      else if (activeTab && activeTab.id === "h-tab-occupied") actualizarHuespedesActivos();
-      else if (activeTab && activeTab.id === "h-tab-album") renderAlbum();
-    } else if (activeModule === "COMERCIO") {
-      let activeTab = document.querySelector("#comercio-nav button.active");
-      if (activeTab && activeTab.id === "c-tab-inv") updateTbl();
-      else if (activeTab && activeTab.id === "c-tab-low") actualizarAlertasStock();
-      else if (activeTab && activeTab.id === "c-tab-album") renderAlbum();
-    }
-  }
-
-  function poblarSelectoresSupervisores(filtro = "") {
-    const select = document.getElementById("supervisor-target-account");
-    if (!select) return;
-    select.innerHTML = "";
-    let filtrados = negociosRegistry.filter(n => n.bizName.toLowerCase().includes(filtro.toLowerCase()));
-    filtrados.forEach(n => {
-      let icon = n.type === "Hotelería" ? "🏨" : "📦";
-      let baseTag = n.dbTarget === "VIEJA" ? "📁 [Base GAMS 3]" : "☁️ [Nueva Base]";
-      select.innerHTML += `<option value="${n.adminKey}">${icon} ${n.bizName} ${baseTag}</option>`;
-    });
-  }
-
-  function filtrarSelectNegociosSupervisor() {
-    poblarSelectoresSupervisores(document.getElementById("supervisor-search-biz").value);
-  }
-
-  function poblarSelectAnalyticsBiz() {
-    const sel = document.getElementById("analytics-target-biz");
-    if (!sel) return;
-    sel.innerHTML = "";
-    negociosRegistry.forEach(n => {
-      sel.innerHTML += `<option value="${n.adminKey}">${n.type === "Hotelería" ? "🏨" : "📦"} ${n.bizName}</option>`;
-    });
-  }
-
-  async function cargarTasasEnPantalla() {
-    let tasas = await getTasas(currentAccountKey);
-    document.getElementById("t-dolar").innerText = `${tasas.dolar} Bs`;
-    document.getElementById("t-euro").innerText = `${tasas.euro} Bs`;
-    document.getElementById("t-usdt").innerText = `${tasas.usdt} Bs`;
-    document.getElementById("t-btc").innerText = tasas.btc;
-
-    document.getElementById("inp-dolar").value = tasas.dolar;
-    document.getElementById("inp-euro").value = tasas.euro;
-    document.getElementById("inp-usdt").value = tasas.usdt;
-    document.getElementById("inp-btc").value = tasas.btc;
-  }
-
-  window.toggleEditarTasas = function() {
-    document.getElementById("form-editar-tasas").classList.toggle("hidden");
-  }
-
-  window.guardarTasasCuenta = async function() {
-    let nuevasTasas = {
-      dolar: parseFloat(document.getElementById("inp-dolar").value) || 36.50,
-      euro: parseFloat(document.getElementById("inp-euro").value) || 39.20,
-      usdt: parseFloat(document.getElementById("inp-usdt").value) || 36.85,
-      btc: document.getElementById("inp-btc").value.trim() || "$91,400"
-    };
-    let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
-    if (neg) {
-      await saveTasas(neg.adminKey, nuevasTasas);
-      await saveTasas(neg.empKey, nuevasTasas);
-    } else {
-      await saveTasas(currentAccountKey, nuevasTasas);
-    }
-    await cargarTasasEnPantalla();
-    document.getElementById("form-editar-tasas").classList.add("hidden");
-    alert(`¡Tasas oficiales guardadas y sincronizadas!`);
-  }
-
-  function showAuthError(msg) {
-    const errBox = document.getElementById("error-msg");
-    errBox.innerText = msg;
-    errBox.style.display = "block";
-  }
-
-  window.validateAuth = function() {
-    const inpVal = document.getElementById("license-input").value.trim();
-    if (!inpVal) return showAuthError("⚠️ Ingresa una clave válida.");
-
-    if (inpVal === "Iryss01" || inpVal === "marrongibrand47@gmail.com") {
-      saveAndReload("SUPERVISOR", "HOTEL", "hotel_mama1");
-      return;
-    }
-
-    let foundNeg = null;
-    let matchedRole = "";
-
-    for (let n of negociosRegistry) {
-      if (n.status === "SUSPENDIDO") continue;
-      if (n.adminPass === inpVal || n.adminKey === inpVal) {
-        foundNeg = n;
-        matchedRole = n.type === "Hotelería" ? "ADMIN_HOTEL" : "ADMIN_COMERCIO";
-        currentAccountKey = n.adminKey;
-        break;
-      } else if (n.empPass === inpVal || n.empKey === inpVal) {
-        foundNeg = n;
-        matchedRole = n.type === "Hotelería" ? "EMPLEADO_HOTEL" : "EMPLEADO_COMERCIO";
-        currentAccountKey = n.empKey;
-        break;
-      }
-    }
-
-    if (foundNeg) {
-      let activeMod = foundNeg.type === "Hotelería" ? "HOTEL" : "COMERCIO";
-      saveAndReload(matchedRole, activeMod, currentAccountKey);
-      return;
-    }
-    showAuthError("❌ Clave incorrecta o negocio suspendido.");
-  }
-
-  function saveAndReload(role, mod, acc) {
-    localStorage.setItem("gams_user_role", role);
-    localStorage.setItem("gams_active_module", mod);
-    localStorage.setItem("gams_current_account", acc);
-    location.reload();
-  }
-
-  window.logoutApp = function() {
-    localStorage.clear();
-    location.reload();
-  }
-
-  window.switchSystemModule = async function(mod) {
-    if (userRole !== "SUPERVISOR") return; 
-    activeModule = mod;
-    localStorage.setItem("gams_active_module", mod);
-
-    let matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
-    if (matchedNeg) {
-      if (mod === "HOTEL" && matchedNeg.type !== "Hotelería") {
-        let firstHotel = negociosRegistry.find(n => n.type === "Hotelería");
-        if (firstHotel) currentAccountKey = firstHotel.adminKey;
-      } else if (mod === "COMERCIO" && matchedNeg.type !== "Inventario / Comercio") {
-        let firstCom = negociosRegistry.find(n => n.type === "Inventario / Comercio");
-        if (firstCom) currentAccountKey = firstCom.adminKey;
-      }
-    }
-    localStorage.setItem("gams_current_account", currentAccountKey);
-    applyModuleTheme();
-    configUI();
-    await cargarTasasEnPantalla();
-    iniciarSincronizacionEnTiempoReal(currentAccountKey);
-
-    if (mod === "HOTEL") switchHotelTab('rooms');
-    else if (mod === "COMERCIO") switchComercioTab('inv');
-    else if (mod === "AUDIT") mostrarPanelAuditoriaTasas();
-    else if (mod === "ANALYTICS") mostrarAnalyticAndRecommendations();
-    else if (mod === "ACCOUNTS") mostrarGestionCuentas();
-  }
-
-  window.cambiarCuentaSupervisorTarget = async function() {
-    const selAcc = document.getElementById("supervisor-target-account").value;
-    currentAccountKey = selAcc;
-    localStorage.setItem("gams_current_account", selAcc);
-
-    let matched = negociosRegistry.find(n => n.adminKey === selAcc || n.empKey === selAcc);
-    if (matched) {
-      if (matched.type === "Hotelería" && activeModule === "COMERCIO") {
-        activeModule = "HOTEL";
-        localStorage.setItem("gams_active_module", "HOTEL");
-      } else if (matched.type === "Inventario / Comercio" && activeModule === "HOTEL") {
-        activeModule = "COMERCIO";
-        localStorage.setItem("gams_active_module", "COMERCIO");
-      }
-    }
-    applyModuleTheme();
-    configUI();
-    await cargarTasasEnPantalla();
-    iniciarSincronizacionEnTiempoReal(currentAccountKey);
-
-    if (activeModule === "HOTEL") switchHotelTab('rooms');
-    else switchComercioTab('inv');
-  }
-
-  function applyModuleTheme() {
-    const supBar = document.getElementById("supervisor-system-bar");
-    const supAccBox = document.getElementById("supervisor-account-selector-box");
-    const hotelNav = document.getElementById("hotel-nav");
-    const comercioNav = document.getElementById("comercio-nav");
-
-    if (userRole === "SUPERVISOR") {
-      supBar.classList.remove("hidden");
-      document.getElementById("sys-tab-hotel").classList.remove("active-sys");
-      document.getElementById("sys-tab-comercio").classList.remove("active-sys");
-      document.getElementById("sys-tab-audit").classList.remove("active-sys");
-      document.getElementById("sys-tab-analytics").classList.remove("active-sys");
-      document.getElementById("sys-tab-accounts").classList.remove("active-sys");
-
-      if (activeModule === "HOTEL") {
-        document.getElementById("sys-tab-hotel").classList.add("active-sys");
-        hotelNav.classList.remove("hidden"); comercioNav.classList.add("hidden"); supAccBox.classList.remove("hidden");
-      } else if (activeModule === "COMERCIO") {
-        document.getElementById("sys-tab-comercio").classList.add("active-sys");
-        hotelNav.classList.add("hidden"); comercioNav.classList.remove("hidden"); supAccBox.classList.remove("hidden");
-      } else if (activeModule === "AUDIT") {
-        document.getElementById("sys-tab-audit").classList.add("active-sys");
-        hotelNav.classList.add("hidden"); comercioNav.classList.add("hidden"); supAccBox.classList.add("hidden");
-      } else if (activeModule === "ANALYTICS") {
-        document.getElementById("sys-tab-analytics").classList.add("active-sys");
-        hotelNav.classList.add("hidden"); comercioNav.classList.add("hidden"); supAccBox.classList.add("hidden");
-      } else if (activeModule === "ACCOUNTS") {
-        document.getElementById("sys-tab-accounts").classList.add("active-sys");
-        hotelNav.classList.add("hidden"); comercioNav.classList.add("hidden"); supAccBox.classList.add("hidden");
-      }
-    } else {
-      supBar.classList.add("hidden"); supAccBox.classList.add("hidden");
-      if (userRole.includes("COMERCIO")) { hotelNav.classList.add("hidden"); comercioNav.classList.remove("hidden"); }
-      else { hotelNav.classList.remove("hidden"); comercioNav.classList.add("hidden"); }
-    }
-
-    document.getElementById("subpage-inventory").classList.add("hidden");
-    document.getElementById("subpage-checkin").classList.add("hidden");
-    document.getElementById("subpage-pos").classList.add("hidden");
-    document.getElementById("subpage-cxc").classList.add("hidden");
-    document.getElementById("subpage-album").classList.add("hidden");
-    document.getElementById("subpage-lowstock").classList.add("hidden");
-    document.getElementById("subpage-audit").classList.add("hidden");
-    document.getElementById("subpage-analytics").classList.add("hidden");
-    document.getElementById("subpage-accounts").classList.add("hidden");
-
-    if (activeModule === "HOTEL") {
-      document.body.className = "theme-hotel";
-      document.getElementById("system-icon").innerText = "🏨";
-      document.getElementById("system-title").innerText = "Sistema de Hotelería";
-      document.getElementById("hotel-dynamic-form").classList.remove("hidden");
-      document.getElementById("comercio-dynamic-form").classList.add("hidden");
-    } else if (activeModule === "COMERCIO") {
-      document.body.className = "theme-comercio";
-      document.getElementById("system-icon").innerText = "📦";
-      document.getElementById("system-title").innerText = "Sistema de Inventario y Comercio";
-      document.getElementById("hotel-dynamic-form").classList.add("hidden");
-      document.getElementById("comercio-dynamic-form").classList.remove("hidden");
-    } else if (activeModule === "AUDIT" || activeModule === "ANALYTICS" || activeModule === "ACCOUNTS") {
-      document.body.className = "theme-audit";
-      let icon = "📊";
-      let title = "Auditoría de Negocios";
-      if (activeModule === "ANALYTICS") { icon = "📈"; title = "Análisis e Inteligencia BI"; }
-      if (activeModule === "ACCOUNTS") { icon = "⚙️"; title = "Gestión de Cuentas"; }
-      document.getElementById("system-icon").innerText = icon;
-      document.getElementById("system-title").innerText = title;
-      document.getElementById("container-actions-form").style.display = "none";
-    }
-  }
-
-  function configUI() {
-    let cleanRoleTxt = userRole === "SUPERVISOR" ? "Supervisor General (♾️)" : "Empleado";
-    let cleanBizTxt = "Establecimiento";
-    let statusTxt = "ACTIVO";
-    let expiryTxt = "2030-12-04";
-
-    if (userRole !== "SUPERVISOR") {
-      let matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
-      if (matchedNeg) {
-        cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Administrador" : "Empleado";
-        cleanBizTxt = matchedNeg.bizName;
-        statusTxt = matchedNeg.status || "ACTIVO";
-        expiryTxt = matchedNeg.expiry || "2030-12-04";
-      }
-    } else {
-      cleanBizTxt = "Plataforma Multinegocio Híbrida";
-      statusTxt = "ILIMITADO ♾️";
-    }
-
-    document.getElementById("user-role-clean").innerText = cleanRoleTxt;
-    document.getElementById("user-business-clean").innerText = cleanBizTxt;
-    document.getElementById("display-account-status").innerText = statusTxt;
-    document.getElementById("display-license-expiry").innerText = expiryTxt;
-
-    const btnDescargarDiario = document.getElementById("btn-descargar-diario-pdf");
-    if (btnDescargarDiario) {
-      if (userRole === "SUPERVISOR") {
-        btnDescargarDiario.classList.remove("hidden");
-      } else {
-        btnDescargarDiario.classList.add("hidden");
-      }
-    }
-
-    if (userRole === "SUPERVISOR") {
-      document.getElementById("supervisor-target-account").value = currentAccountKey;
-      document.getElementById("container-actions-form").style.display = "none";
-    } else if (userRole.includes("ADMIN")) {
-      document.getElementById("divisa-admin-panel").style.display = "block";
-      document.getElementById("container-actions-form").style.display = "block";
-    } else {
-      document.getElementById("divisa-admin-panel").style.display = "none";
-      document.getElementById("container-actions-form").style.display = "none";
-    }
-  }
-
-  async function mostrarPanelAuditoriaTasas() {
-    document.getElementById("subpage-audit").classList.remove("hidden");
-    const container = document.getElementById("audit-cards-container");
-    container.innerHTML = "";
-
-    let nombresEmpresas = [];
-    let totalesVentasEmpresas = [];
-
-    for (let neg of negociosRegistry) {
-      let tasas = await getTasas(neg.adminKey);
-      let dbData = await getDbItems(neg.adminKey);
-      let transacciones = await getLibroDiario(neg.adminKey);
-      let totalVentas = transacciones.reduce((acc, t) => acc + (t.monto || 0), 0);
-
-      nombresEmpresas.push(neg.bizName);
-      totalesVentasEmpresas.push(totalVentas);
-
-      let baseDestino = neg.dbTarget === "VIEJA" ? "📁 Base Vieja (GAMS 3)" : "☁️ Nueva Base (gams-hoteleria)";
-
-      container.innerHTML += `
-        <div style="background: #ffffff; border: 2px solid #212529; padding: 18px; border-radius: 8px;">
-          <h4 style="margin-top:0; color:#212529; border-bottom: 2px solid #212529; padding-bottom: 6px;">
-            ${neg.type === "Hotelería" ? '🏨' : '📦'} ${neg.bizName} 
-            <span style="font-size: 11px; background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; float: right;">${baseDestino}</span>
-          </h4>
-          <p style="margin: 6px 0; font-size:12px; color:#555;"><strong>Claves:</strong> Admin (<code>${neg.adminPass}</code>) | Emp (<code>${neg.empPass}</code>)</p>
-          <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-top: 10px; font-size: 13px;">
-            💵 <strong>Dólar:</strong> ${tasas.dolar} Bs<br>
-            📊 <strong>Total Movimientos:</strong> $${totalVentas.toFixed(2)}<br>
-            📦 <strong>Registros Totales:</strong> ${dbData.length} elementos
-          </div>
+  <!-- GESTIÓN DE CUENTAS -->
+  <div id="subpage-accounts" class="hidden">
+    <h3>⚙️ Gestión y Control de Cuentas</h3>
+    <div style="background: #ffffff; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+      <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio</h4>
+      <div class="grid" style="gap:10px;">
+        <div><label><small>Nombre del Negocio:</small></label><input type="text" id="new-account-biz" placeholder="Ej: Barbería GAMS o Spa Central"></div>
+        <div><label><small>Tipo de Sistema:</small></label>
+          <select id="new-account-type">
+            <option value="Inventario / Comercio">📦 Inventario / Comercio (Base GAMS 3)</option>
+            <option value="Hotelería">🏨 Hotelería (Base gams-hoteleria)</option>
+            <option value="Citas y Agendas">📅 Citas y Agendas Multi-Personal</option>
+          </select>
         </div>
-      `;
-    }
-
-    const ctx = document.getElementById('graficoVentasSupervisor').getContext('2d');
-    if (chartSupervisorInstance) chartSupervisorInstance.destroy();
-
-    chartSupervisorInstance = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: nombresEmpresas,
-        datasets: [{
-          label: 'Ventas / Movimientos Totales ($ USD)',
-          data: totalesVentasEmpresas,
-          backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#dc3545'],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }
-
-  async function mostrarAnalyticAndRecommendations() {
-    document.getElementById("subpage-analytics").classList.remove("hidden");
-    const container = document.getElementById("analytics-content-container");
-    container.innerHTML = "";
-
-    const selectedBizKey = document.getElementById("analytics-target-biz").value || negociosRegistry[0].adminKey;
-    let selectedNeg = negociosRegistry.find(n => n.adminKey === selectedBizKey || n.empKey === selectedBizKey) || negociosRegistry[0];
-
-    let dbData = await getDbItems(selectedNeg.adminKey);
-    let transacciones = await getLibroDiario(selectedNeg.adminKey);
-
-    let prodA = dbData.length > 0 ? dbData[0].name : "Producto A";
-    let prodB = dbData.length > 1 ? dbData[1].name : "Producto B";
-
-    let recomendacionTexto = `Se vendieron varios productos de alta rotación como "${prodA}", por lo que se recomienda comprar más stock de este artículo y colocarlo en un lugar más visible para maximizar las ventas. Por otro lado, "${prodB}" no registró movimiento esta semana; se recomienda cambiarlo por otro producto de mayor demanda o reducir su stock debido a estar fuera de temporada.`;
-
-    container.innerHTML = `
-      <div class="analytics-card" style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da; margin-bottom:15px;">
-        <h4 style="margin-top:0; color:#0056b3;">📈 Informe Analítico e Inteligencia BI (${selectedNeg.bizName})</h4>
-        <p><strong>Recomendación Ejecutiva:</strong> ${recomendacionTexto}</p>
-        <p><strong>Total de transacciones procesadas:</strong> ${transacciones.length}</p>
-        <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="enviarReporteBIPDF('${selectedNeg.bizName}', '${recomendacionTexto}')">📤 Generar PDF de Análisis y Descargar</button>
-      </div>`;
-  }
-
-  window.enviarReporteBIPDF = function(nombreNegocio, recomendacion) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    doc.setFont("times", "bold");
-    doc.setFontSize(16);
-    doc.text(`REPORTE EJECUTIVO DE INTELIGENCIA BI`, 14, 20);
-    
-    doc.setFont("times", "normal");
-    doc.setFontSize(11);
-    doc.text(`Caracas, Venezuela | Fecha: ${new Date().toLocaleString()}`, 14, 27);
-    doc.text(`Comercio Analizado: ${nombreNegocio} | Emisor: Gibrand Marron (CI: 32751191)`, 14, 34);
-
-    doc.text("------------------------------------------------------------------------------------------------------------------", 14, 42);
-    
-    doc.setFont("times", "bold");
-    doc.text("Análisis y Recomendaciones Automatizadas:", 14, 50);
-    
-    doc.setFont("times", "normal");
-    doc.text(recomendacion, 14, 58, { maxWidth: 180 });
-
-    doc.save(`Analisis_BI_${nombreNegocio.replace(/\s+/g, '_')}.pdf`);
-    alert(`✅ ¡Reporte PDF de BI generado y descargado exitosamente!`);
-  }
-
-  function mostrarGestionCuentas() {
-    document.getElementById("subpage-accounts").classList.remove("hidden");
-    const tbody = document.getElementById("accounts-control-table");
-    tbody.innerHTML = "";
-
-    negociosRegistry.forEach((neg, idx) => {
-      let isSuspended = neg.status === "SUSPENDIDO";
-      let statusBadge = isSuspended ? `<span class="badge-status-suspended">⛔ SUSPENDIDO</span>` : `<span class="badge-status-active">🟢 ACTIVA</span>`;
-      let dbDestinoTxt = neg.dbTarget === "VIEJA" ? "📁 Base GAMS 3" : "☁️ gams-hoteleria";
-
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${neg.bizName}</strong></td>
-          <td><small>🔑 <strong>Admin:</strong> ${neg.adminPass}</small><br><small>🔑 <strong>Emp:</strong> ${neg.empPass}</small></td>
-          <td>${neg.type}</td>
-          <td><small><strong>${dbDestinoTxt}</strong></small></td>
-          <td>${statusBadge}</td>
-          <td><strong>${neg.expiry || '2030-12-04'}</strong></td>
-          <td>
-            <button class="${isSuspended ? 'btn-success' : 'btn-warning'}" style="padding: 6px; font-size: 11px; margin-bottom: 3px;" onclick="toggleEstadoNegocio(${idx})">${isSuspended ? 'Reactivar' : 'Suspender'}</button>
-            <button class="btn-success" style="padding: 6px; font-size: 11px; margin-bottom: 3px; background-color: #17a2b8;" onclick="extenderLicenciaNegocio(${idx})">⏱️ Extender</button>
-            <button class="btn-danger" style="padding: 6px; font-size: 11px;" onclick="eliminarNegocio(${idx})">Eliminar</button>
-          </td>
-        </tr>`;
-    });
-  }
-
-  window.registrarNuevaCuentaUnificada = async function() {
-    const bizName = document.getElementById("new-account-biz").value.trim();
-    const type = document.getElementById("new-account-type").value;
-    const adminPass = document.getElementById("new-account-pass-admin").value.trim();
-    const empPass = document.getElementById("new-account-pass-emp").value.trim();
-    if (!bizName || !adminPass || !empPass) return alert("Completa todos los campos.");
-
-    let dbTargetValue = (type === "Hotelería") ? "NUEVA" : "VIEJA";
-    let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
-    let adminKey = (type === "Hotelería" ? "hotel_" : "comercio_") + id + "_admin";
-    let empKey = (type === "Hotelería" ? "hotel_" : "comercio_") + id + "_emp";
-    let expiryStr = calcularFechaLicenciaUnMesDia4();
-
-    negociosRegistry.push({ id, bizName, type, dbTarget: dbTargetValue, adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
-    await saveNegociosRegistry(negociosRegistry);
-    poblarSelectoresSupervisores();
-    poblarSelectAnalyticsBiz();
-    mostrarGestionCuentas();
-    alert(`🎉 ¡Negocio "${bizName}" registrado con éxito!`);
-  }
-
-  window.toggleEstadoNegocio = async function(idx) {
-    negociosRegistry[idx].status = negociosRegistry[idx].status === "SUSPENDIDO" ? "ACTIVO" : "SUSPENDIDO";
-    await saveNegociosRegistry(negociosRegistry);
-    mostrarGestionCuentas();
-  }
-
-  window.extenderLicenciaNegocio = async function(idx) {
-    let neg = negociosRegistry[idx];
-    let dateObj = new Date(neg.expiry || '2030-12-04');
-    if (isNaN(dateObj.getTime())) dateObj = new Date();
-    dateObj.setMonth(dateObj.getMonth() + 1);
-    negociosRegistry[idx].expiry = dateObj.toISOString().split('T')[0];
-    await saveNegociosRegistry(negociosRegistry);
-    mostrarGestionCuentas();
-    alert(`⏱️ ¡Licencia extendida hasta el ${negociosRegistry[idx].expiry}!`);
-  }
-
-  window.eliminarNegocio = async function(idx) {
-    let neg = negociosRegistry[idx];
-    if (!neg) return;
-
-    if (confirm(`¿Estás seguro de eliminar el negocio "${neg.bizName}" y borrar permanentemente sus datos de Firebase para liberar almacenamiento en la nube?`)) {
-      let targetKey = neg.adminKey;
-      let activeDb = await getDbForBusiness(targetKey);
-
-      if (navigator.onLine) {
-        try {
-          if (neg.type === "Hotelería") {
-            await activeDb.collection("hotelería").doc(targetKey).delete().catch(() => {});
-          } else {
-            await activeDb.collection("gams_db").doc(targetKey).delete().catch(() => {});
-          }
-          await activeDb.collection("gams_diario").doc(targetKey).delete().catch(() => {});
-          await activeDb.collection("gams_tasas").doc(targetKey).delete().catch(() => {});
-          await activeDb.collection("gams_cxc").doc(targetKey).delete().catch(() => {});
-        } catch (e) {
-          console.error("Error eliminando datos de Firebase:", e);
-        }
-      }
-
-      localStorage.removeItem(`gams_items_${targetKey}`);
-      localStorage.removeItem(`gams_diario_${targetKey}`);
-      localStorage.removeItem(`gams_tasas_${targetKey}`);
-      localStorage.removeItem(`gams_cxc_${targetKey}`);
-
-      negociosRegistry.splice(idx, 1);
-      await saveNegociosRegistry(negociosRegistry);
-
-      poblarSelectoresSupervisores();
-      poblarSelectAnalyticsBiz();
-      mostrarGestionCuentas();
-      alert(`🗑️ El negocio "${neg.bizName}" y todos sus documentos en Firebase fueron eliminados con éxito.`);
-    }
-  }
-
-  async function cargarSelectCarrito() {
-    const sel = document.getElementById("cart-prod-select");
-    if (!sel) return;
-    sel.innerHTML = "";
-    let curr = await getDbItems(currentAccountKey);
-    if (curr.length === 0) {
-      sel.innerHTML = '<option value="">-- No hay ítems disponibles --</option>';
-      return;
-    }
-    curr.forEach((item, idx) => {
-      let precio = activeModule === "HOTEL" ? (item.pNoche || 0) : (item.priceUsd || 0);
-      let stockTxt = activeModule === "HOTEL" ? (item.stock > 0 ? "Disponible" : "Ocupado") : `Stock actual: ${item.stock}`;
-      sel.innerHTML += `<option value="${idx}">[${item.barcode}] ${item.name} | ${stockTxt} | Precio: $${precio.toFixed(2)}</option>`;
-    });
-  }
-
-  window.agregarAlCarrito = async function() {
-    const selIdx = document.getElementById("cart-prod-select").value;
-    const qty = parseInt(document.getElementById("cart-qty").value) || 1;
-    if (selIdx === "") return alert("Selecciona un producto o servicio.");
-
-    let curr = await getDbItems(currentAccountKey);
-    let prod = curr[selIdx];
-    let precio = activeModule === "HOTEL" ? (prod.pNoche || 0) : (prod.priceUsd || 0);
-
-    let existente = cartItems.find(i => i.barcode === prod.barcode);
-    if (existente) {
-      existente.qty += qty;
-    } else {
-      cartItems.push({ barcode: prod.barcode, name: prod.name, price: precio, qty: qty, originalIndex: selIdx });
-    }
-    renderizarCarrito();
-  }
-
-  window.agregarEscaneadoAlCarritoDesdeVista = function() {
-    let selInputIdx = document.getElementById("cart-prod-select").value;
-    if (selInputIdx !== "") {
-      agregarAlCarrito();
-      document.getElementById("scanned-result-container").classList.add("hidden");
-      document.getElementById("scanner-input").value = "";
-    }
-  }
-
-  async function renderizarCarrito() {
-    const tbody = document.getElementById("cart-items-table");
-    if (!tbody) return;
-    tbody.innerHTML = "";
-
-    if (cartItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">El carrito está vacío.</td></tr>';
-      document.getElementById("cart-total-usd").innerText = "$0.00";
-      document.getElementById("cart-total-bs").innerText = "0.00 Bs";
-      return;
-    }
-
-    let totalUsd = 0;
-    let tasas = await getTasas(currentAccountKey);
-    let tasaDolar = tasas.dolar || 36.50;
-
-    cartItems.forEach((item, idx) => {
-      let subtotal = item.price * item.qty;
-      totalUsd += subtotal;
-      tbody.innerHTML += `
-        <tr>
-          <td><strong>${item.name}</strong><br><small>SKU: ${item.barcode}</small></td>
-          <td>$${item.price.toFixed(2)}</td>
-          <td>${item.qty}</td>
-          <td>$${subtotal.toFixed(2)}</td>
-          <td><button class="btn-delete" onclick="eliminarDelCarrito(${idx})">🗑️</button></td>
-        </tr>`;
-    });
-
-    let totalBs = totalUsd * tasaDolar;
-    document.getElementById("cart-total-usd").innerText = `$${totalUsd.toFixed(2)}`;
-    document.getElementById("cart-total-bs").innerText = `${totalBs.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})} Bs`;
-  }
-
-  window.eliminarDelCarrito = function(idx) {
-    cartItems.splice(idx, 1);
-    renderizarCarrito();
-  }
-
-  window.procesarCompraCarrito = async function() {
-    if (cartItems.length === 0) return alert("El carrito está vacío.");
-    
-    let curr = await getDbItems(currentAccountKey);
-    let totalVentaUsd = 0;
-
-    for (let item of cartItems) {
-      let prod = curr[item.originalIndex];
-      if (prod) {
-        let sub = item.price * item.qty;
-        totalVentaUsd += sub;
-        if (activeModule === "COMERCIO") {
-          if (prod.stock < item.qty) return alert(`Stock insuficiente para "${prod.name}".`);
-          prod.stock -= item.qty;
-        } else {
-          prod.stock = 0;
-        }
-      }
-    }
-
-    await saveDbItems(currentAccountKey, curr);
-    let detalleVenta = cartItems.map(i => `${i.qty}x ${i.name}`).join(", ");
-    await registrarTransaccionDiaria(currentAccountKey, "VENTA / POS", detalleVenta, totalVentaUsd);
-
-    alert("✅ ¡Venta procesada con éxito y registrada en el Libro Diario!");
-    cartItems = [];
-    renderizarCarrito();
-    if (activeModule === "HOTEL") switchHotelTab('rooms');
-    else switchComercioTab('pos');
-  }
-
-  window.switchHotelTab = function(tab) {
-    if (activeModule !== "HOTEL") return;
-    document.getElementById("subpage-inventory").classList.add("hidden");
-    document.getElementById("subpage-checkin").classList.add("hidden");
-    document.getElementById("subpage-album").classList.add("hidden");
-    document.getElementById("subpage-lowstock").classList.add("hidden");
-
-    document.getElementById("h-tab-rooms").classList.remove("active");
-    document.getElementById("h-tab-checkin").classList.remove("active");
-    document.getElementById("h-tab-album").classList.remove("active");
-    document.getElementById("h-tab-occupied").classList.remove("active");
-
-    if (tab === 'rooms') {
-      document.getElementById("subpage-inventory").classList.remove("hidden");
-      document.getElementById("h-tab-rooms").classList.add("active");
-      document.getElementById("libro-diario-section").classList.add("hidden");
-      updateTbl();
-    } else if (tab === 'checkin') {
-      document.getElementById("subpage-checkin").classList.remove("hidden");
-      document.getElementById("h-tab-checkin").classList.add("active");
-      cargarSelectHabitacionesLibres();
-    } else if (tab === 'album') {
-      document.getElementById("subpage-album").classList.remove("hidden");
-      document.getElementById("h-tab-album").classList.add("active");
-      renderAlbum();
-    } else if (tab === 'occupied') {
-      document.getElementById("subpage-lowstock").classList.remove("hidden");
-      document.getElementById("h-tab-occupied").classList.add("active");
-      actualizarHuespedesActivos();
-    }
-  }
-
-  window.switchComercioTab = function(tab) {
-    if (activeModule !== "COMERCIO") return;
-    document.getElementById("subpage-inventory").classList.add("hidden");
-    document.getElementById("subpage-pos").classList.add("hidden");
-    document.getElementById("subpage-cxc").classList.add("hidden");
-    document.getElementById("subpage-album").classList.add("hidden");
-    document.getElementById("subpage-lowstock").classList.add("hidden");
-
-    document.getElementById("c-tab-inv").classList.remove("active");
-    document.getElementById("c-tab-pos").classList.remove("active");
-    document.getElementById("c-tab-cxc").classList.remove("active");
-    document.getElementById("c-tab-album").classList.remove("active");
-    document.getElementById("c-tab-low").classList.remove("active");
-
-    if (tab === 'inv') {
-      document.getElementById("subpage-inventory").classList.remove("hidden");
-      document.getElementById("c-tab-inv").classList.add("active");
-      document.getElementById("libro-diario-section").classList.remove("hidden");
-      updateTbl();
-      actualizarLibroDiarioEnVista();
-    } else if (tab === 'pos') {
-      document.getElementById("subpage-pos").classList.remove("hidden");
-      document.getElementById("c-tab-pos").classList.add("active");
-      cargarSelectCarrito();
-      renderizarCarrito();
-    } else if (tab === 'cxc') {
-      document.getElementById("subpage-cxc").classList.remove("hidden");
-      document.getElementById("c-tab-cxc").classList.add("active");
-      cargarSelectCxCProductos();
-      renderizarCxCCarrito();
-      cargarCxCTabla();
-    } else if (tab === 'album') {
-      document.getElementById("subpage-album").classList.remove("hidden");
-      document.getElementById("c-tab-album").classList.add("active");
-      renderAlbum();
-    } else if (tab === 'low') {
-      document.getElementById("subpage-lowstock").classList.remove("hidden");
-      document.getElementById("c-tab-low").classList.add("active");
-      actualizarAlertasStock();
-    }
-  }
-
-  async function actualizarLibroDiarioEnVista() {
-    const tbody = document.getElementById("libro-diario-list");
-    if (!tbody) return;
-    let transacciones = await getLibroDiario(currentAccountKey);
-    tbody.innerHTML = "";
-
-    if (transacciones.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No hay transacciones registradas en el libro diario.</td></tr>';
-      return;
-    }
-
-    transacciones.forEach(t => {
-      tbody.innerHTML += `
-        <tr>
-          <td><small>${t.fecha}</small></td>
-          <td><strong>${t.tipo}</strong></td>
-          <td>${t.detalle}</td>
-          <td>$${t.monto.toFixed(2)}</td>
-          <td><small>${t.usuario}</small></td>
-        </tr>
-      `;
-    });
-  }
-
-  async function cargarSelectHabitacionesLibres() {
-    const sel = document.getElementById("ci-room-select");
-    sel.innerHTML = "";
-    let curr = await getDbItems(currentAccountKey);
-    let libres = curr.filter(i => i.stock === 1);
-    if (libres.length === 0) {
-      sel.innerHTML = '<option value="">-- No hay cuartos libres --</option>';
-      return;
-    }
-    libres.forEach(item => {
-      sel.innerHTML += `<option value="${curr.indexOf(item)}">[Cuarto ${item.barcode}] ${item.name}</option>`;
-    });
-    mostrarTarifasHabitacion();
-  }
-
-  async function mostrarTarifasHabitacion() {
-    const idx = document.getElementById("ci-room-select").value;
-    const previewBox = document.getElementById("tarifa-preview-box");
-    if (idx === "") return;
-    let curr = await getDbItems(currentAccountKey);
-    let room = curr[idx];
-    previewBox.innerHTML = `<strong>💡 Tarifas para ${room.name}:</strong><br>⏱️ 1H: $${(room.p1h||0).toFixed(2)} | 🌙 Noche: $${(room.pNoche||0).toFixed(2)}`;
-  }
-
-  window.ejecutarCheckInFormal = async function() {
-    const idx = document.getElementById("ci-room-select").value;
-    if (idx === "") return alert("Selecciona una habitación.");
-    const nombres = document.getElementById("ci-nombres").value.trim();
-    const apellidos = document.getElementById("ci-apellidos").value.trim();
-    const doc = document.getElementById("ci-doc").value.trim();
-    const telefono = document.getElementById("ci-telefono").value.trim();
-    const gmail = document.getElementById("ci-gmail").value.trim();
-
-    if (!nombres || !apellidos || !doc || !telefono || !gmail) return alert("Completa todos los datos.");
-
-    let curr = await getDbItems(currentAccountKey);
-    curr[idx].stock = 0;
-    curr[idx].guestName = `${nombres} ${apellidos}`;
-    curr[idx].guestPhone = telefono;
-    curr[idx].guestDoc = doc;
-    curr[idx].guestGmail = gmail;
-    curr[idx].tiempoAlquiler = document.getElementById("ci-tipo-tarifa").value;
-    curr[idx].tarifaAplicada = `Tarifa Oficial`;
-
-    let montoAlquiler = curr[idx].pNoche || 35.00;
-
-    await saveDbItems(currentAccountKey, curr);
-    await registrarTransaccionDiaria(currentAccountKey, "CHECK-IN HOTEL", `Cuarto ${curr[idx].barcode} - ${curr[idx].guestName}`, montoAlquiler);
-
-    alert("✅ Check-In registrado con éxito.");
-    switchHotelTab('rooms');
-  }
-
-  window.liberarHabitacionCheckOut = async function(idx) {
-    if (confirm("¿Realizar Check-Out?")) {
-      let curr = await getDbItems(currentAccountKey);
-      curr[idx].stock = 1;
-      curr[idx].guestName = "";
-      curr[idx].guestPhone = "";
-      await saveDbItems(currentAccountKey, curr);
-      actualizarHuespedesActivos();
-    }
-  }
-
-  window.buscarProductoPorEscanner = async function(query) {
-    query = query.trim().toLowerCase();
-    let curr = await getDbItems(currentAccountKey);
-    let previewBox = document.getElementById("scanned-result-container");
-    if (!query) { previewBox.classList.add("hidden"); return; }
-    let foundIdx = curr.findIndex(i => i.barcode.toLowerCase() === query || i.name.toLowerCase().includes(query));
-    if (foundIdx !== -1) {
-      let prod = curr[foundIdx];
-      document.getElementById("scnd-img").src = prod.img || defaultImgPlaceholder;
-      document.getElementById("scnd-name").innerText = prod.name;
-      document.getElementById("scnd-info").innerText = `SKU: ${prod.barcode} | Stock actual: ${prod.stock} | Precio: $${(prod.priceUsd || prod.pNoche || 0).toFixed(2)}`;
-      previewBox.classList.remove("hidden");
-      document.getElementById("cart-prod-select").value = foundIdx;
-    } else {
-      previewBox.classList.add("hidden");
-    }
-  }
-
-  window.simularLecturaRapida = async function() {
-    let curr = await getDbItems(currentAccountKey);
-    if (curr.length === 0) return alert("Sin productos.");
-    document.getElementById("scanner-input").value = curr[0].barcode;
-    buscarProductoPorEscanner(curr[0].barcode);
-  }
-
-  let imagenBase64Procesada = "";
-
-  window.procesarImagenSeleccionada = function(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 400;
-        const MAX_HEIGHT = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        imagenBase64Procesada = canvas.toDataURL('image/jpeg', 0.75);
-        
-        document.getElementById("img-preview-tag").src = imagenBase64Procesada;
-        document.getElementById("img-preview-box").style.display = "block";
-        document.getElementById("prod-img").value = "";
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.actualizarPreviaUrl = function(url) {
-    if (url.trim()) {
-      imagenBase64Procesada = "";
-      document.getElementById("img-preview-tag").src = url.trim();
-      document.getElementById("img-preview-box").style.display = "block";
-    } else if (!imagenBase64Procesada) {
-      document.getElementById("img-preview-box").style.display = "none";
-    }
-  };
-
-  window.limpiarImagenCargada = function() {
-    imagenBase64Procesada = "";
-    document.getElementById("prod-img").value = "";
-    document.getElementById("prod-img-file").value = "";
-    document.getElementById("prod-img-camera").value = "";
-    document.getElementById("img-preview-box").style.display = "none";
-  };
-
-  window.createProd = async function() {
-    if (userRole.includes("EMPLEADO")) return alert("No permitido.");
-    const barcode = document.getElementById("prod-barcode").value.trim() || "SKU-999";
-    const name = document.getElementById("prod-name").value.trim();
-    const img = imagenBase64Procesada || document.getElementById("prod-img").value.trim() || defaultImgPlaceholder;
-    if (!name) return alert("Ingresa un nombre.");
-
-    let curr = await getDbItems(currentAccountKey);
-    if (activeModule === "HOTEL") {
-      curr.push({
-        date: new Date().toLocaleDateString(), barcode, name, img,
-        camas: parseInt(document.getElementById("room-camas").value) || 1,
-        banos: parseInt(document.getElementById("room-banos").value) || 1,
-        desc: document.getElementById("room-desc").value.trim() || "Estándar",
-        stock: 1,
-        p1h: parseFloat(document.getElementById("price-1h").value) || 8.00,
-        pNoche: parseFloat(document.getElementById("price-noche").value) || 35.00,
-        guestName: "", guestPhone: ""
-      });
-    } else {
-      curr.push({
-        date: new Date().toLocaleDateString(), barcode, name, img,
-        stock: parseInt(document.getElementById("prod-stock").value) || 0,
-        priceUsd: parseFloat(document.getElementById("prod-price-usd").value) || 0
-      });
-    }
-
-    await saveDbItems(currentAccountKey, curr);
-    await registrarTransaccionDiaria(currentAccountKey, "ALTA DE PRODUCTO", `Nuevo ítem: ${name} (SKU: ${barcode})`, 0);
-
-    updateTbl();
-    renderAlbum();
-    limpiarImagenCargada();
-    alert("¡Elemento guardado con éxito!");
-  }
-
-  window.delProd = async function(idx) {
-    if (confirm("¿Eliminar elemento?")) {
-      let curr = await getDbItems(currentAccountKey);
-      curr.splice(idx, 1);
-      await saveDbItems(currentAccountKey, curr);
-      updateTbl();
-      renderAlbum();
-    }
-  }
-
-  async function updateTbl() {
-    const tbody = document.getElementById("inventory-list");
-    tbody.innerHTML = "";
-    let curr = await getDbItems(currentAccountKey);
-
-    if (activeModule === "HOTEL") {
-      document.getElementById("table-title").innerText = "📋 Habitaciones";
-      document.getElementById("th-code").innerText = "Cuarto";
-      document.getElementById("th-name").innerText = "Nombre";
-      document.getElementById("th-status").innerText = "Estado";
-      document.getElementById("th-price").innerText = "Tarifa Noche";
-    } else {
-      document.getElementById("table-title").innerText = "📦 Inventario Central";
-      document.getElementById("th-code").innerText = "SKU";
-      document.getElementById("th-name").innerText = "Producto";
-      document.getElementById("th-status").innerText = "Stock";
-      document.getElementById("th-price").innerText = "Precio USD";
-    }
-
-    if (curr.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Sin registros.</td></tr>";
-      return;
-    }
-
-    curr.forEach((item, idx) => {
-      let estadoTxt = activeModule === "HOTEL" ? (item.stock > 0 ? "🟢 Libre" : `🔴 Ocupado`) : `${item.stock} uds`;
-      let precioTxt = activeModule === "HOTEL" ? `$${(item.pNoche||0).toFixed(2)}` : `$${(item.priceUsd||0).toFixed(2)}`;
-      let btnDel = (!userRole.includes("EMPLEADO") && userRole !== "SUPERVISOR") ? `<button class="btn-delete" onclick="delProd(${idx})">🗑️</button>` : `<small>-</small>`;
-
-      tbody.innerHTML += `
-        <tr>
-          <td><small>${item.date}</small></td>
-          <td><code>${item.barcode}</code></td>
-          <td>${item.name}</td>
-          <td><strong>${estadoTxt}</strong></td>
-          <td>${precioTxt}</td>
-          <td>${btnDel}</td>
-        </tr>`;
-    });
-  }
-
-  async function renderAlbum() {
-    const container = document.getElementById("album-container");
-    container.innerHTML = "";
-    let curr = await getDbItems(currentAccountKey);
-    document.getElementById("album-main-title").innerText = activeModule === "HOTEL" ? "🖼️ Catálogo de Habitaciones" : "🖼️ Galería de Productos";
-
-    curr.forEach(item => {
-      let badgeHtml = activeModule === "HOTEL" ? `<div class="${item.stock > 0 ? 'sticker-badge ok' : 'sticker-badge low'}">${item.stock > 0 ? "Disponible 🟢" : "Ocupado 🔴"}</div>` : `<div class="sticker-badge ok">Stock: ${item.stock}</div>`;
-      container.innerHTML += `
-        <div class="sticker-card">
-          <img src="${item.img || defaultImgPlaceholder}" class="sticker-img" onerror="this.src='${defaultImgPlaceholder}'">
-          <div class="sticker-title">${item.name}</div>
-          <small>Código: ${item.barcode}</small><br>${badgeHtml}
-        </div>`;
-    });
-  }
-
-  async function actualizarHuespedesActivos() {
-    const tbody = document.getElementById("lowstock-list");
-    tbody.innerHTML = "";
-    document.getElementById("lowstock-main-title").innerText = "📋 Huéspedes Activos";
-    document.getElementById("sec-th-list").innerHTML = `<th>Habitación</th><th>Huésped</th><th>Tiempo</th><th>Tarifa</th><th>Acción</th>`;
-
-    let curr = await getDbItems(currentAccountKey);
-    let ocupadas = curr.filter(i => i.stock === 0);
-    if (ocupadas.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No hay huéspedes activos.</td></tr>";
-      return;
-    }
-    ocupadas.forEach(item => {
-      let realIdx = curr.indexOf(item);
-      tbody.innerHTML += `
-        <tr class="alert-row">
-          <td>Cuarto ${item.barcode}</td>
-          <td><strong>${item.guestName}</strong></td>
-          <td>${item.tiempoAlquiler}</td>
-          <td>${item.tarifaAplicada}</td>
-          <td><button class="btn-success" style="padding: 6px;" onclick="liberarHabitacionCheckOut(${realIdx})">Check-Out</button></td>
-        </tr>`;
-    });
-  }
-
-  async function actualizarAlertasStock() {
-    const tbody = document.getElementById("lowstock-list");
-    tbody.innerHTML = "";
-    document.getElementById("lowstock-main-title").innerText = "⚠️ Alertas de Stock Bajo";
-    document.getElementById("sec-th-list").innerHTML = `<th>SKU</th><th>Producto</th><th>Stock</th><th>Precio</th><th>Estado</th>`;
-
-    let curr = await getDbItems(currentAccountKey);
-    let criticos = curr.filter(i => i.stock <= 5);
-    if (criticos.length === 0) {
-      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>Todo el stock está en niveles óptimos.</td></tr>";
-      return;
-    }
-    criticos.forEach(item => {
-      tbody.innerHTML += `
-        <tr class="alert-row">
-          <td><code>${item.barcode}</code></td>
-          <td><strong>${item.name}</strong></td>
-          <td>${item.stock} uds</td>
-          <td>$${(item.priceUsd||0).toFixed(2)}</td>
-          <td><span style="color: #721c24; font-weight: bold;">Crítico</span></td>
-        </tr>`;
-    });
-  }
-
-  // --- LÓGICA DEL WIDGET FLOTANTE DE IA MICHAEL ---
-  window.toggleGamsAIChat = function() {
-    document.getElementById("gams-ai-chat-window").classList.toggle("hidden");
-  }
-
-  window.enviarPreguntaGamsAI = async function() {
-    const inp = document.getElementById("gams-ai-input");
-    const body = document.getElementById("gams-ai-chat-body");
-    const txt = inp.value.trim();
-    if (!txt) return;
-
-    body.innerHTML += `<div class="gams-ai-msg user">${escapeHtml(txt)}</div>`;
-    inp.value = "";
-    body.scrollTop = body.scrollHeight;
-
-    const loadingId = "ai-load-" + Date.now();
-    body.innerHTML += `<div id="${loadingId}" class="gams-ai-msg assistant"><em>Michael está analizando...</em></div>`;
-    body.scrollTop = body.scrollHeight;
-
-    try {
-      const res = await fetch('https://gibrand-digital-cores.vercel.app/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: `[Consulta GAMS]: ${txt}`, device: 'GAMS Netlify Widget' })
-      });
-      const data = await res.json();
+      </div>
+      <div class="grid" style="gap:10px; margin-top:5px;">
+        <div><label><small>🔑 Clave Admin:</small></label><input type="text" id="new-account-pass-admin" placeholder="Ej: admin123"></div>
+        <div><label><small>🔑 Clave Empleado:</small></label><input type="text" id="new-account-pass-emp" placeholder="Ej: emp123"></div>
+      </div>
+      <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Comercio</th>
+            <th>Claves (Admin / Emp)</th>
+            <th>Tipo</th>
+            <th>Base Datos</th>
+            <th>Licencia</th>
+            <th>Vencimiento</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="accounts-control-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- FORMULARIO DE REGISTRO UNIFICADO -->
+  <div class="grid" id="container-actions-form">
+    <div style="width: 100%;">
+      <h3 id="form-create-title">1. Registrar Elemento en el Sistema</h3>
+      <input type="text" id="prod-barcode" placeholder="Código / SKU / ID">
+      <input type="text" id="prod-name" placeholder="Nombre / Descripción / Servicio">
       
-      document.getElementById(loadingId).remove();
+      <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0; text-align: center;">
+        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">📸 Imagen / Foto del Registro:</label>
+        
+        <div class="grid" style="gap: 5px; margin-bottom: 8px;">
+          <button type="button" class="btn-success" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-file').click()">📁 Subir Archivo (JPG / PNG)</button>
+          <button type="button" class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-camera').click()">📷 Tomar Foto</button>
+        </div>
 
-      if (data.error) {
-        body.innerHTML += `<div class="gams-ai-msg assistant">Error: ${data.error}</div>`;
-      } else {
-        const formattedResponse = marked.parse(data.response);
-        body.innerHTML += `<div class="gams-ai-msg assistant">${formattedResponse}</div>`;
-      }
-    } catch (e) {
-      document.getElementById(loadingId).remove();
-      body.innerHTML += `<div class="gams-ai-msg assistant">Error de conexión con el servidor.</div>`;
-    }
-    body.scrollTop = body.scrollHeight;
-  }
+        <input type="file" id="prod-img-file" accept="image/*" style="display:none;" onchange="procesarImagenSeleccionada(event)">
+        <input type="file" id="prod-img-camera" accept="image/*" capture="environment" style="display:none;" onchange="procesarImagenSeleccionada(event)">
 
-  function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-</script>
+        <input type="text" id="prod-img" placeholder="O ingresa enlace / URL de imagen..." onchange="actualizarPreviaUrl(this.value)">
+
+        <div id="img-preview-box" style="margin-top: 8px; display: none;">
+          <small style="display:block; color:#555;">Vista previa:</small>
+          <img id="img-preview-tag" src="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; margin-top: 4px;">
+          <br>
+          <button type="button" style="background:#dc3545; color:white; border:none; padding:3px 10px; border-radius:4px; font-size:11px; margin-top:4px; width:auto;" onclick="limpiarImagenCargada()">❌ Quitar Foto</button>
+        </div>
+      </div>
+
+      <div id="hotel-dynamic-form">
+        <div class="grid" style="gap: 5px;">
+          <input type="number" id="room-camas" placeholder="Camas" value="1">
+          <input type="number" id="room-banos" placeholder="Baños" value="1">
+        </div>
+        <input type="text" id="room-desc" placeholder="Comodidades">
+        <div class="grid" style="gap: 5px;">
+          <input type="number" id="price-1h" placeholder="1 Hora ($)" step="0.01">
+          <input type="number" id="price-3h" placeholder="3 Horas ($)" step="0.01">
+        </div>
+        <div class="grid" style="gap: 5px;">
+          <input type="number" id="price-noche" placeholder="Noche ($)" step="0.01">
+          <input type="number" id="price-dia" placeholder="Día ($)" step="0.01">
+        </div>
+        <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
+      </div>
+
+      <div id="comercio-dynamic-form" class="hidden">
+        <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
+        <div class="grid" style="gap: 5px;">
+          <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">
+        </div>
+      </div>
+
+      <button class="btn-success" style="margin-top: 10px;" onclick="createProd()">Guardar Elemento</button>
+    </div>
+  </div>
+
+  <br>
+  <button onclick="logoutApp()" style="background-color: #6c757d; width: auto;">🚪 Cerrar Sesión</button>
+</div>
+
+<!-- INCLUSIÓN DEL CHAT WIDGET DE MICHAEL -->
+<div id="chat-ai-container"></div>
+
+<!-- CARGA DE ARCHIVOS JS MODULARES -->
+<script src="js/core.js"></script>
+<script src="js/modulo-hotel.js"></script>
+<script src="js/modulo-comercio.js"></script>
+<script src="js/modulo-citas.js"></script>
+<script src="js/modulo-referidos.js"></script>
+<script src="js/chat-ai.js"></script>
 
 </body>
 </html>
