@@ -46,38 +46,68 @@ window.enviarPreguntaGamsAI = async function() {
   body.scrollTop = body.scrollHeight;
 
   let rolActual = window.userRole || "EMPLEADO"; 
+  let esJefeOAdmin = rolActual === "SUPERVISOR" || rolActual.includes("ADMIN");
 
-  // Restricción de cuentas ajenas
+  // Restricción de espionaje entre cuentas ajenas
   if (["otra cuenta", "otro negocio", "cuanto vende", "datos de la empresa", "ver comercios"].some(p => txt.includes(p)) && rolActual !== "SUPERVISOR") {
     body.innerHTML += `<div class="gams-ai-msg assistant">⛔ **Acceso Denegado:** Esta información está clasificada o la cuenta no tiene los permisos suficientes.</div>`;
     body.scrollTop = body.scrollHeight;
     return;
   }
 
-  // Restricción de reportes gerenciales para empleados
+  // Restricción de métricas gerenciales para empleados
   if (rolActual.includes("EMPLEADO") && ["reporte de ventas", "ganancias totales", "balance general"].some(p => txt.includes(p))) {
-    body.innerHTML += `<div class="gams-ai-msg assistant">🔒 **Permiso Insuficiente:** Como empleado, solo tienes acceso a funciones operativas.</div>`;
+    body.innerHTML += `<div class="gams-ai-msg assistant">🔒 **Permiso Insuficiente:** Como empleado, solo tienes acceso a funciones operativas de tu puesto.</div>`;
     body.scrollTop = body.scrollHeight;
     return;
   }
 
   let respuestaPredeterminada = "";
-  if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete")) {
-    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Inventario ($15), Hotelería ($25), Agendas ($25). Combos: 2 módulos ($35-$40), Full Suite ($50). Incluye análisis BI (máx. 1 vez por semana).`;
-  } else if (txt.includes("contab") || txt.includes("asesoram")) {
-    respuestaPredeterminada = `💼 <strong>Asesoramiento Contable:</strong> Disponible para inventario. Precio negociable según el establecimiento y volumen de operaciones.`;
-  } else if (txt.includes("como agregar") || txt.includes("crear") || txt.includes("pasos")) {
-    if (rolActual.includes("EMPLEADO")) {
-      respuestaPredeterminada = `🔒 **Restringido:** Los empleados no tienen permisos para crear productos o cuartos. Función exclusiva de Administradores.`;
-    } else if (txt.includes("producto")) {
-      respuestaPredeterminada = `📦 <strong>Agregar Producto:</strong> Ve a Módulo Comercio > Formulario inferior ("Registrar Elemento") > Rellena los datos y guarda.`;
-    } else if (txt.includes("cuarto")) {
-      respuestaPredeterminada = `🏨 <strong>Registrar Cuarto:</strong> Ve a Módulo Hotel > Sección final > Ingresa código, tarifas y guarda.`;
+
+  // EXPLICACIÓN DEL CARRITO (DISPONIBLE PARA EMPLEADOS Y JEFES)
+  if (txt.includes("carrito") || txt.includes("como usar el carrito") || txt.includes("pos") || txt.includes("venta")) {
+    respuestaPredeterminada = `
+🛒 <strong>Paso a Paso para usar el Carrito / POS (Empleados y Jefes):</strong>
+1. Abre el <strong>Módulo Comercio</strong> y ve a la pestaña <strong>"🛒 POS & Carrito"</strong>.
+2. Selecciona el producto del menú desplegable o escanea su código SKU.
+3. Elige la cantidad deseada y haz clic en <strong>"➕ Agregar al Carrito"</strong>.
+4. El sistema calculará automáticamente el total en <strong>USD ($)</strong> y su equivalente oficial en <strong>Bolívares (Bs)</strong>.
+5. Haz clic en <strong>"💳 Procesar Venta"</strong> para descontar el stock del inventario y registrar la transacción en el Libro Diario.
+    `;
+  }
+  
+  // EXPLICACIÓN DE EDICIÓN DE MONEDAS (EXCLUSIVO PARA JEFES / ADMIN Y SUPERVISOR)
+  else if (txt.includes("moneda") || txt.includes("editar dolar") || txt.includes("tasa") || txt.includes("cambiar precio dolar")) {
+    if (!esJefeOAdmin) {
+      respuestaPredeterminada = `🔒 **Restringido:** Solo los Jefes (Administradores) y el Supervisor General tienen permisos para modificar las tasas de cambio de divisas.`;
     } else {
-      respuestaPredeterminada = `📅 <strong>Agendar Cita:</strong> Ve a Módulo Citas > Selecciona barbero y fecha > Completa datos y confirma.`;
+      respuestaPredeterminada = `
+⚙️ <strong>Paso a Paso para Editar Tasas de Cambio (Jefes y Supervisor):</strong>
+1. En la parte superior de la pantalla, haz clic en el botón gris <strong>"⚙️ Establecer Tasas de Cambio del Negocio"</strong>.
+2. Ingresa los nuevos valores para el <strong>Dólar (Bs)</strong>, <strong>Euro (Bs)</strong>, <strong>USDT / Cripto (Bs)</strong> o <strong>Bitcoin ($ USD)</strong>.
+3. Haz clic en <strong>"💾 Guardar Tasas"</strong>. Todos los precios en Bolívares del carrito se actualizarán de inmediato.
+      `;
     }
-  } else if (txt.includes("soporte") || txt.includes("telefono")) {
-    respuestaPredeterminada = `📞 <strong>Soporte Técnico GAMS:</strong> Comunícate con Gibrand Marron al <strong>+58 4242015806</strong>.`;
+  }
+
+  // INSTRUCCIONES DE CREAR ELEMENTOS (JEFES VS EMPLEADOS)
+  else if (txt.includes("como agregar") || txt.includes("crear") || txt.includes("pasos")) {
+    if (!esJefeOAdmin && (txt.includes("producto") || txt.includes("cuarto"))) {
+      respuestaPredeterminada = `🔒 **Restringido:** Los empleados no tienen permisos para registrar o modificar el inventario/cuartos. Esta acción es exclusiva de los Jefes (Administradores).`;
+    } else if (txt.includes("producto") || txt.includes("inventario")) {
+      respuestaPredeterminada = `📦 <strong>Agregar Producto (Exclusivo Jefe / Admin):</strong> Ve a Módulo Comercio > Formulario inferior ("Registrar Elemento") > Ingresa SKU, Nombre, Stock, Precio y haz clic en Guardar.`;
+    } else if (txt.includes("cuarto") || txt.includes("habitacion")) {
+      respuestaPredeterminada = `🏨 <strong>Registrar Cuarto (Exclusivo Jefe / Admin):</strong> Ve a Módulo Hotel > Sección final > Ingresa código, camas, baños, tarifas y haz clic en Guardar.`;
+    } else if (txt.includes("cita")) {
+      respuestaPredeterminada = `📅 <strong>Agendar Cita:</strong> Ve a Módulo Citas > Selecciona barbero y fecha > Completa los datos del cliente y confirma.`;
+    }
+  }
+
+  // PRECIOS Y SOPORTE
+  else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete")) {
+    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Inventario ($15), Hotelería ($25), Agendas ($25). Combos: 2 módulos ($35-$40), Full Suite ($50). Incluye análisis BI (máx. 1 vez por semana).`;
+  } else if (txt.includes("soporte") || txt.includes("telefono") || txt.includes("contacto")) {
+    respuestaPredeterminada = `📞 <strong>Soporte Técnico GAMS:</strong> Comunícate con <strong>Gibrand Marron</strong> al <strong>+58 4242015806</strong>.`;
   }
 
   if (respuestaPredeterminada) {

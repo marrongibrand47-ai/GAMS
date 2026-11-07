@@ -85,7 +85,7 @@ window.cargarHorariosDisponibles = async function() {
   let filtradas = citas.filter(c => c.personalId === personalId && c.fecha === fecha);
 
   if (filtradas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay citas para el ${fecha}. ¡Horario libre!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;">No hay citas agendadas para el ${fecha}. ¡Horario libre!</td></tr>`;
     return;
   }
   filtradas.forEach(c => {

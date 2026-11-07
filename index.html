@@ -13,14 +13,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Marked.js para chat de IA -->
+<!-- Marked.js -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- PANTALLA DE INICIO DE SESIÓN -->
+<!-- INICIO DE SESIÓN -->
 <div id="license-screen" class="card">
   <h2>🔒 Iniciar Sesión - GAMS Company</h2>
   <p>Ingresa tu clave de acceso autorizada:</p>
@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- PESTAÑAS SUPERIORES (SUPERVISOR) -->
+  <!-- BARRA SUPERIOR (SUPERVISOR) -->
   <div id="supervisor-system-bar" class="main-system-tabs hidden">
     <button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Módulo Hotel</button>
     <button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Módulo Comercio</button>
@@ -88,75 +88,86 @@
     <div>⏳ <strong>Vencimiento Licencia:</strong> <span id="display-license-expiry" style="font-weight: bold;">2030-12-04</span></div>
   </div>
 
-  <!-- NAVEGACIÓN DE MÓDULOS -->
+  <!-- PESTAÑAS HOTEL -->
   <div id="hotel-nav" class="nav-tabs">
     <button id="h-tab-rooms" class="active" onclick="switchHotelTab('rooms')">🛏️ Cuartos</button>
     <button id="h-tab-checkin" onclick="switchHotelTab('checkin')">🛎️ Check-In</button>
+    <button id="h-tab-album" onclick="switchHotelTab('album')">📸 Fotos y Tarifas</button>
+    <button id="h-tab-occupied" onclick="switchHotelTab('occupied')">📋 Huéspedes Activos</button>
   </div>
 
+  <!-- PESTAÑAS COMERCIO -->
   <div id="comercio-nav" class="nav-tabs hidden">
-    <button id="c-tab-inv" class="active" onclick="switchComercioTab('inv')">📦 Inventario</button>
+    <button id="c-tab-inv" class="active" onclick="switchComercioTab('inv')">📦 Inventario & Libro Diario</button>
     <button id="c-tab-pos" onclick="switchComercioTab('pos')">🛒 POS & Carrito</button>
-    <button id="c-tab-cxc" onclick="switchComercioTab('cxc')">💳 CxC</button>
+    <button id="c-tab-cxc" onclick="switchComercioTab('cxc')">💳 Cuentas por Cobrar (CxC)</button>
+    <button id="c-tab-album" onclick="switchComercioTab('album')">📸 Galería</button>
+    <button id="c-tab-low" onclick="switchComercioTab('low')">⚠️ Alertas Stock</button>
   </div>
 
-  <!-- CONTENEDORES DE MÓDULOS -->
+  <!-- CONTENEDORES DE MÓDULOS DIVERSIFICADOS -->
   <div id="modulo-hotel-container"></div>
   <div id="modulo-comercio-container" class="hidden"></div>
   <div id="modulo-citas-container" class="hidden"></div>
   <div id="modulo-referidos-container" class="hidden"></div>
 
-  <!-- SUBPÁGINAS DE AUDITORÍA Y BI -->
+  <!-- AUDITORÍA DE NEGOCIOS -->
   <div id="subpage-audit" class="hidden">
-    <h3>📊 Auditoría Unificada</h3>
+    <h3>📊 Auditoría Unificada de Negocios y Gráficos de Ventas</h3>
     <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ced4da;">
-      <h4 style="margin-top:0; color:#0056b3;">📈 Gráfico General de Ventas</h4>
+      <h4 style="margin-top:0; color:#0056b3;">📈 Gráfico General de Ventas por Empresa</h4>
       <canvas id="graficoVentasSupervisor" style="max-height: 300px; width: 100%;"></canvas>
     </div>
     <div id="audit-cards-container" class="grid" style="gap: 15px; margin-top: 15px;"></div>
   </div>
 
+  <!-- ANÁLISIS & BI -->
   <div id="subpage-analytics" class="hidden">
     <h3>📈 Análisis de Datos y Recomendaciones BI</h3>
-    <div style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px;">
+    <div style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
       <label style="font-weight: bold; font-size: 13px;">🏢 Seleccionar Comercio:</label>
       <select id="analytics-target-biz" onchange="mostrarAnalyticAndRecommendations()" style="font-weight: bold; color: #0056b3; margin-top: 5px;"></select>
     </div>
     <div id="analytics-content-container"></div>
   </div>
 
+  <!-- GESTIÓN DE CUENTAS -->
   <div id="subpage-accounts" class="hidden">
     <h3>⚙️ Gestión y Control de Cuentas</h3>
     <div style="background: #ffffff; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
       <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio</h4>
       <div class="grid" style="gap:10px;">
-        <input type="text" id="new-account-biz" placeholder="Nombre del Negocio">
+        <input type="text" id="new-account-biz" placeholder="Ej: Barbería GAMS o Hotel Sol">
         <select id="new-account-type">
-          <option value="Inventario / Comercio">📦 Inventario / Comercio</option>
-          <option value="Hotelería">🏨 Hotelería</option>
-          <option value="Citas y Agendas">📅 Citas y Agendas</option>
+          <option value="Inventario / Comercio">📦 Inventario / Comercio (Base GAMS 3)</option>
+          <option value="Hotelería">🏨 Hotelería (Base gams-hoteleria)</option>
+          <option value="Citas y Agendas">📅 Citas y Agendas Multi-Personal</option>
         </select>
       </div>
       <div class="grid" style="gap:10px; margin-top:5px;">
-        <input type="text" id="new-account-pass-admin" placeholder="🔑 Clave Admin">
+        <input type="text" id="new-account-pass-admin" placeholder="🔑 Clave Admin (Jefe)">
         <input type="text" id="new-account-pass-emp" placeholder="🔑 Clave Empleado">
       </div>
       <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio</button>
     </div>
-    <table>
-      <thead><tr><th>Comercio</th><th>Claves</th><th>Tipo</th><th>Licencia</th><th>Vencimiento</th><th>Acciones</th></tr></thead>
-      <tbody id="accounts-control-table"></tbody>
-    </table>
+    <div style="overflow-x: auto;">
+      <table>
+        <thead>
+          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Tipo</th><th>Base de Datos</th><th>Licencia</th><th>Vencimiento</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="accounts-control-table"></tbody>
+      </table>
+    </div>
   </div>
 
   <hr>
 
-  <!-- FORMULARIO DE REGISTRO UNIFICADO -->
+  <!-- FORMULARIO DE REGISTRO ADAPTATIVO -->
   <div class="grid" id="container-actions-form">
     <div style="width: 100%;">
       <h3 id="form-create-title">1. Registrar Elemento en el Sistema</h3>
       <input type="text" id="prod-barcode" placeholder="Código / SKU / ID">
-      <input type="text" id="prod-name" placeholder="Nombre / Descripción / Servicio">
+      <input type="text" id="prod-name" placeholder="Nombre / Descripción">
       
       <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0; text-align: center;">
         <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">📸 Imagen del Registro:</label>
@@ -173,6 +184,7 @@
         </div>
       </div>
 
+      <!-- CAMPOS HOTEL (SOLO EN HOTEL) -->
       <div id="hotel-dynamic-form">
         <div class="grid" style="gap: 5px;">
           <input type="number" id="room-camas" placeholder="Camas" value="1">
@@ -190,6 +202,7 @@
         <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
       </div>
 
+      <!-- CAMPOS COMERCIO (SOLO EN COMERCIO) -->
       <div id="comercio-dynamic-form" class="hidden">
         <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
         <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">
@@ -203,10 +216,10 @@
   <button onclick="logoutApp()" style="background-color: #6c757d; width: auto;">🚪 Cerrar Sesión</button>
 </div>
 
-<!-- WIDGET DE CHAT IA -->
+<!-- CHAT IA -->
 <div id="chat-ai-container"></div>
 
-<!-- SCRIPTS MODULARES -->
+<!-- SCRIPTS -->
 <script src="js/core.js"></script>
 <script src="js/modulo-hotel.js"></script>
 <script src="js/modulo-comercio.js"></script>

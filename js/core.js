@@ -1,3 +1,4 @@
+// CORE GAMS COMPANY
 const hotelFirebaseConfig = {
   apiKey: "AIzaSyDRavKFUBrMVE5YZUXTuieTuOkUWz4JWyo",
   authDomain: "gams-hoteleria.firebaseapp.com",
@@ -27,10 +28,19 @@ let userRole = "";
 let activeModule = "HOTEL"; 
 let currentAccountKey = "hotel_mama1"; 
 let negociosRegistry = [];
+let chartSupervisorInstance = null;
+const defaultImgPlaceholder = "https://cdn-icons-png.flaticon.com/512/679/679821.png";
+
+function calcularFechaLicenciaUnMesDia4() {
+  let d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  d.setDate(4);
+  return d.toISOString().split('T')[0];
+}
 
 const defaultNegocios = [
-  { id: "hotel_costa_real", bizName: "Hotel Costa Real", type: "Hotelería", dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: "2030-12-04" },
-  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", type: "Inventario / Comercio", dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: "2030-12-04" }
+  { id: "hotel_costa_real", bizName: "Hotel Costa Real", type: "Hotelería", dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() },
+  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", type: "Inventario / Comercio", dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() }
 ];
 
 function obtenerIdentificadorRaizNegocio(key) {
@@ -85,7 +95,9 @@ async function getLibroDiario(key) {
 async function registrarTransaccionDiaria(key, tipo, detalle, monto) {
   let raizKey = obtenerIdentificadorRaizNegocio(key);
   let transacciones = await getLibroDiario(raizKey);
-  transacciones.unshift({ fecha: new Date().toLocaleString(), tipo, detalle, monto, usuario: userRole === "SUPERVISOR" ? "Supervisor" : "Administrador" });
+  let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (currentAccountKey.includes("admin") ? "Jefe / Administrador" : "Empleado");
+  
+  transacciones.unshift({ fecha: new Date().toLocaleString(), tipo, detalle, monto, usuario: usuarioActual });
   localStorage.setItem(`gams_diario_${raizKey}`, JSON.stringify(transacciones));
   if (navigator.onLine) {
     try {
@@ -105,6 +117,14 @@ async function initFirebaseData() {
   } catch (e) { console.warn(e); }
 }
 
+async function saveNegociosRegistry(list) {
+  negociosRegistry = list;
+  localStorage.setItem("gams_negocios_registry", JSON.stringify(list));
+  if (navigator.onLine) {
+    await dbHotel.collection("gams_system").doc("registry").set({ negocios: list });
+  }
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
   await initFirebaseData();
   if(window.renderModuloHotel) renderModuloHotel();
@@ -116,6 +136,9 @@ window.addEventListener('DOMContentLoaded', async () => {
   const savedRole = localStorage.getItem("gams_user_role");
   const savedMod = localStorage.getItem("gams_active_module");
   const savedAcc = localStorage.getItem("gams_current_account");
+
+  poblarSelectoresSupervisores();
+  poblarSelectAnalyticsBiz();
 
   if (savedRole) {
     userRole = savedRole;
@@ -129,6 +152,25 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchSystemModule(activeModule);
   }
 });
+
+function poblarSelectoresSupervisores(filtro = "") {
+  const select = document.getElementById("supervisor-target-account");
+  if (!select) return;
+  select.innerHTML = "";
+  let filtrados = negociosRegistry.filter(n => n.bizName.toLowerCase().includes(filtro.toLowerCase()));
+  filtrados.forEach(n => {
+    select.innerHTML += `<option value="${n.adminKey}">${n.type === "Hotelería" ? "🏨" : "📦"} ${n.bizName}</option>`;
+  });
+}
+
+function poblarSelectAnalyticsBiz() {
+  const sel = document.getElementById("analytics-target-biz");
+  if (!sel) return;
+  sel.innerHTML = "";
+  negociosRegistry.forEach(n => {
+    sel.innerHTML += `<option value="${n.adminKey}">${n.type === "Hotelería" ? "🏨" : "📦"} ${n.bizName}</option>`;
+  });
+}
 
 async function getTasas(key) {
   let raizKey = obtenerIdentificadorRaizNegocio(key);
@@ -185,7 +227,7 @@ window.guardarTasasCuenta = async function() {
   }
   await cargarTasasEnPantalla();
   document.getElementById("form-editar-tasas").classList.add("hidden");
-  alert(`¡Tasas oficiales guardadas con éxito!`);
+  alert(`¡Tasas oficiales guardadas!`);
 }
 
 window.validateAuth = function() {
@@ -258,11 +300,9 @@ window.switchSystemModule = async function(mod) {
   } else if (mod === "CITAS") {
     document.getElementById("modulo-citas-container").classList.remove("hidden");
     if(window.renderModuloCitas) window.renderModuloCitas();
-    if(window.cargarVistaCitas) cargarVistaCitas();
   } else if (mod === "REFERIDOS") {
     document.getElementById("modulo-referidos-container").classList.remove("hidden");
     if(window.renderModuloReferidos) window.renderModuloReferidos();
-    if(window.cargarVistaReferidos) cargarVistaReferidos();
   } else if (mod === "AUDIT") mostrarPanelAuditoriaTasas();
   else if (mod === "ANALYTICS") mostrarAnalyticAndRecommendations();
   else if (mod === "ACCOUNTS") mostrarGestionCuentas();
@@ -287,18 +327,26 @@ function applyModuleTheme() {
     supBar.classList.add("hidden");
   }
 
+  // ADAPTACIÓN DEL FORMULARIO DINÁMICO SEGÚN MÓDULO
+  const formHotel = document.getElementById("hotel-dynamic-form");
+  const formComercio = document.getElementById("comercio-dynamic-form");
+
   if (activeModule === "HOTEL") {
     document.body.className = "theme-hotel";
     if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "🏨";
     if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Hotelería";
     if(hotelNav) hotelNav.classList.remove("hidden"); 
     if(comercioNav) comercioNav.classList.add("hidden");
+    if(formHotel) formHotel.classList.remove("hidden");
+    if(formComercio) formComercio.classList.add("hidden");
   } else if (activeModule === "COMERCIO") {
     document.body.className = "theme-comercio";
     if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📦";
     if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Comercio";
     if(hotelNav) hotelNav.classList.add("hidden"); 
     if(comercioNav) comercioNav.classList.remove("hidden");
+    if(formHotel) formHotel.classList.add("hidden");
+    if(formComercio) formComercio.classList.remove("hidden");
   } else {
     if(hotelNav) hotelNav.classList.add("hidden"); 
     if(comercioNav) comercioNav.classList.add("hidden");
@@ -314,7 +362,7 @@ function configUI() {
   if (userRole !== "SUPERVISOR") {
     let matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
     if (matchedNeg) {
-      cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Administrador" : "Empleado";
+      cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Jefe / Administrador" : "Empleado";
       cleanBizTxt = matchedNeg.bizName;
       statusTxt = matchedNeg.status || "ACTIVO";
       expiryTxt = matchedNeg.expiry || "2030-12-04";
@@ -329,7 +377,6 @@ function configUI() {
   if(document.getElementById("display-account-status")) document.getElementById("display-account-status").innerText = statusTxt;
   if(document.getElementById("display-license-expiry")) document.getElementById("display-license-expiry").innerText = expiryTxt;
 
-  // Habilitar panel de divisas para SUPERVISOR y ADMINISTRADORES
   const divisaPanel = document.getElementById("divisa-admin-panel");
   const formAction = document.getElementById("container-actions-form");
   if (divisaPanel) {
@@ -340,5 +387,199 @@ function configUI() {
       divisaPanel.style.display = "none";
       if(formAction) formAction.style.display = "none";
     }
+  }
+}
+
+// RESTAURACIÓN DE AUDITORÍA Y GRÁFICOS
+async function mostrarPanelAuditoriaTasas() {
+  document.getElementById("subpage-audit").classList.remove("hidden");
+  const container = document.getElementById("audit-cards-container");
+  container.innerHTML = "";
+
+  let nombresEmpresas = [];
+  let totalesVentasEmpresas = [];
+
+  for (let neg of negociosRegistry) {
+    let tasas = await getTasas(neg.adminKey);
+    let dbData = await getDbItems(neg.adminKey);
+    let transacciones = await getLibroDiario(neg.adminKey);
+    let totalVentas = transacciones.reduce((acc, t) => acc + (t.monto || 0), 0);
+
+    nombresEmpresas.push(neg.bizName);
+    totalesVentasEmpresas.push(totalVentas);
+
+    container.innerHTML += `
+      <div style="background: #ffffff; border: 2px solid #212529; padding: 18px; border-radius: 8px;">
+        <h4 style="margin-top:0; color:#212529;">${neg.bizName}</h4>
+        <p style="margin: 6px 0; font-size:12px; color:#555;">Jefe: ${neg.adminPass} | Emp: ${neg.empPass}</p>
+        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px;">
+          💵 Dólar: ${tasas.dolar} Bs | 📊 Movimientos: $${totalVentas.toFixed(2)} | 📦 Registros: ${dbData.length}
+        </div>
+      </div>`;
+  }
+
+  const ctx = document.getElementById('graficoVentasSupervisor').getContext('2d');
+  if (chartSupervisorInstance) chartSupervisorInstance.destroy();
+  chartSupervisorInstance = new Chart(ctx, {
+    type: 'bar',
+    data: { labels: nombresEmpresas, datasets: [{ label: 'Ventas Totales ($)', data: totalesVentasEmpresas, backgroundColor: '#007bff' }] }
+  });
+}
+
+// RESTAURACIÓN DE ANÁLISIS Y BI
+async function mostrarAnalyticAndRecommendations() {
+  document.getElementById("subpage-analytics").classList.remove("hidden");
+  const container = document.getElementById("analytics-content-container");
+  const selectedBizKey = document.getElementById("analytics-target-biz").value || negociosRegistry[0].adminKey;
+  let selectedNeg = negociosRegistry.find(n => n.adminKey === selectedBizKey) || negociosRegistry[0];
+
+  let recomendacionTexto = `Se vendieron productos de alta demanda en ${selectedNeg.bizName}. Se sugiere reponer stock y colocar ofertas visibles para incrementar las conversiones semanales.`;
+
+  container.innerHTML = `
+    <div style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da;">
+      <h4>📈 Reporte de Análisis BI (${selectedNeg.bizName})</h4>
+      <p><strong>Recomendación Ejecutiva:</strong> ${recomendacionTexto}</p>
+      <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="enviarReporteBIPDF('${selectedNeg.bizName}', '${recomendacionTexto}')">📤 Descargar Reporte PDF</button>
+    </div>`;
+}
+
+window.enviarReporteBIPDF = function(nombreNegocio, recomendacion) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFont("times", "bold");
+  doc.setFontSize(16);
+  doc.text(`REPORTE EJECUTIVO DE INTELIGENCIA BI`, 14, 20);
+  doc.setFont("times", "normal");
+  doc.setFontSize(11);
+  doc.text(`Caracas, Venezuela | Fecha: ${new Date().toLocaleString()}`, 14, 27);
+  doc.text(`Negocio: ${nombreNegocio} | Emisor: Gibrand Marron (CI: 32751191)`, 14, 34);
+  doc.text(recomendacion, 14, 50, { maxWidth: 180 });
+  doc.save(`Analisis_BI_${nombreNegocio.replace(/\s+/g, '_')}.pdf`);
+  alert("✅ Reporte PDF descargado.");
+}
+
+// RESTAURACIÓN DE GESTIÓN DE CUENTAS
+function mostrarGestionCuentas() {
+  document.getElementById("subpage-accounts").classList.remove("hidden");
+  const tbody = document.getElementById("accounts-control-table");
+  tbody.innerHTML = "";
+
+  negociosRegistry.forEach((neg, idx) => {
+    let isSuspended = neg.status === "SUSPENDIDO";
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${neg.bizName}</strong></td>
+        <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
+        <td>${neg.type}</td>
+        <td>Base Standard</td>
+        <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
+        <td>${neg.expiry || '2030-12-04'}</td>
+        <td>
+          <button class="${isSuspended ? 'btn-success' : 'btn-warning'}" style="padding: 6px; font-size: 11px;" onclick="toggleEstadoNegocio(${idx})">${isSuspended ? 'Reactivar' : 'Suspender'}</button>
+          <button class="btn-danger" style="padding: 6px; font-size: 11px;" onclick="eliminarNegocio(${idx})">Eliminar</button>
+        </td>
+      </tr>`;
+  });
+}
+
+window.registrarNuevaCuentaUnificada = async function() {
+  const bizName = document.getElementById("new-account-biz").value.trim();
+  const type = document.getElementById("new-account-type").value;
+  const adminPass = document.getElementById("new-account-pass-admin").value.trim();
+  const empPass = document.getElementById("new-account-pass-emp").value.trim();
+  if (!bizName || !adminPass || !empPass) return alert("Completa todos los campos.");
+
+  let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
+  let adminKey = "biz_" + id + "_admin";
+  let empKey = "biz_" + id + "_emp";
+  let expiryStr = calcularFechaLicenciaUnMesDia4();
+
+  negociosRegistry.push({ id, bizName, type, dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
+  await saveNegociosRegistry(negociosRegistry);
+  mostrarGestionCuentas();
+  alert(`🎉 Negocio "${bizName}" registrado con éxito.`);
+}
+
+window.toggleEstadoNegocio = async function(idx) {
+  negociosRegistry[idx].status = negociosRegistry[idx].status === "SUSPENDIDO" ? "ACTIVO" : "SUSPENDIDO";
+  await saveNegociosRegistry(negociosRegistry);
+  mostrarGestionCuentas();
+}
+
+window.eliminarNegocio = async function(idx) {
+  if (confirm("¿Eliminar negocio de la plataforma?")) {
+    negociosRegistry.splice(idx, 1);
+    await saveNegociosRegistry(negociosRegistry);
+    mostrarGestionCuentas();
+  }
+}
+
+// CREACIÓN DE ELEMENTOS CON FOTO BASE64
+let imagenBase64Procesada = "";
+window.procesarImagenSeleccionada = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    imagenBase64Procesada = e.target.result;
+    document.getElementById("img-preview-tag").src = imagenBase64Procesada;
+    document.getElementById("img-preview-box").style.display = "block";
+  };
+  reader.readAsDataURL(file);
+};
+
+window.actualizarPreviaUrl = function(url) {
+  if (url.trim()) {
+    imagenBase64Procesada = "";
+    document.getElementById("img-preview-tag").src = url.trim();
+    document.getElementById("img-preview-box").style.display = "block";
+  }
+};
+
+window.limpiarImagenCargada = function() {
+  imagenBase64Procesada = "";
+  document.getElementById("prod-img").value = "";
+  document.getElementById("img-preview-box").style.display = "none";
+};
+
+window.createProd = async function() {
+  const barcode = document.getElementById("prod-barcode").value.trim() || "SKU-999";
+  const name = document.getElementById("prod-name").value.trim();
+  const img = imagenBase64Procesada || document.getElementById("prod-img").value.trim() || defaultImgPlaceholder;
+  if (!name) return alert("Ingresa un nombre.");
+
+  let curr = await getDbItems(currentAccountKey);
+  if (activeModule === "HOTEL") {
+    curr.push({
+      date: new Date().toLocaleDateString(), barcode, name, img,
+      camas: parseInt(document.getElementById("room-camas").value) || 1,
+      banos: parseInt(document.getElementById("room-banos").value) || 1,
+      desc: document.getElementById("room-desc").value.trim() || "Estándar",
+      stock: 1, p1h: parseFloat(document.getElementById("price-1h").value) || 8.00,
+      pNoche: parseFloat(document.getElementById("price-noche").value) || 35.00
+    });
+  } else {
+    curr.push({
+      date: new Date().toLocaleDateString(), barcode, name, img,
+      stock: parseInt(document.getElementById("prod-stock").value) || 0,
+      priceUsd: parseFloat(document.getElementById("prod-price-usd").value) || 0
+    });
+  }
+
+  await saveDbItems(currentAccountKey, curr);
+  await registrarTransaccionDiaria(currentAccountKey, "ALTA DE ELEMENTO", `Nuevo ítem: ${name}`, 0);
+  limpiarImagenCargada();
+  alert("¡Elemento guardado!");
+  if(activeModule === "HOTEL") switchHotelTab('rooms');
+  else switchComercioTab('inv');
+}
+
+window.delProd = async function(idx) {
+  if (confirm("¿Eliminar elemento?")) {
+    let curr = await getDbItems(currentAccountKey);
+    curr.splice(idx, 1);
+    await saveDbItems(currentAccountKey, curr);
+    if(activeModule === "HOTEL") switchHotelTab('rooms');
+    else switchComercioTab('inv');
   }
 }
