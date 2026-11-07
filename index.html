@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>GAMS Company - Sistema Multimodular Escalable</title>
+<title>GAMS - Sistema Multimodular Escalable</title>
 
-<!-- FIREBASE SDK (Compat) -->
+<!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
@@ -22,7 +22,7 @@
 
 <!-- INICIO DE SESIÓN -->
 <div id="license-screen" class="card">
-  <h2>🔒 Iniciar Sesión - GAMS Company</h2>
+  <h2>🔒 Iniciar Sesión - GAMS</h2>
   <p>Ingresa tu clave de acceso autorizada:</p>
   <input type="password" id="license-input" placeholder="Ingresa tu clave de acceso...">
   <button class="btn-success" onclick="validateAuth()">Entrar al Sistema</button>
@@ -105,13 +105,13 @@
     <button id="c-tab-low" onclick="switchComercioTab('low')">⚠️ Alertas Stock</button>
   </div>
 
-  <!-- CONTENEDORES DE MÓDULOS DIVERSIFICADOS -->
+  <!-- CONTENEDORES DE MÓDULOS -->
   <div id="modulo-hotel-container"></div>
   <div id="modulo-comercio-container" class="hidden"></div>
   <div id="modulo-citas-container" class="hidden"></div>
   <div id="modulo-referidos-container" class="hidden"></div>
 
-  <!-- AUDITORÍA DE NEGOCIOS -->
+  <!-- AUDITORÍA -->
   <div id="subpage-audit" class="hidden">
     <h3>📊 Auditoría Unificada de Negocios y Gráficos de Ventas</h3>
     <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ced4da;">
@@ -121,7 +121,7 @@
     <div id="audit-cards-container" class="grid" style="gap: 15px; margin-top: 15px;"></div>
   </div>
 
-  <!-- ANÁLISIS & BI -->
+  <!-- ANÁLISIS BI -->
   <div id="subpage-analytics" class="hidden">
     <h3>📈 Análisis de Datos y Recomendaciones BI</h3>
     <div style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
@@ -139,8 +139,8 @@
       <div class="grid" style="gap:10px;">
         <input type="text" id="new-account-biz" placeholder="Ej: Barbería GAMS o Hotel Sol">
         <select id="new-account-type">
-          <option value="Inventario / Comercio">📦 Inventario / Comercio (Base GAMS 3)</option>
-          <option value="Hotelería">🏨 Hotelería (Base gams-hoteleria)</option>
+          <option value="Inventario / Comercio">📦 Inventario / Comercio</option>
+          <option value="Hotelería">🏨 Hotelería</option>
           <option value="Citas y Agendas">📅 Citas y Agendas Multi-Personal</option>
         </select>
       </div>
@@ -153,7 +153,7 @@
     <div style="overflow-x: auto;">
       <table>
         <thead>
-          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Tipo</th><th>Base de Datos</th><th>Licencia</th><th>Vencimiento</th><th>Acciones</th></tr>
+          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Tipo</th><th>Base</th><th>Licencia</th><th>Vencimiento</th><th>Acciones</th></tr>
         </thead>
         <tbody id="accounts-control-table"></tbody>
       </table>
@@ -184,7 +184,7 @@
         </div>
       </div>
 
-      <!-- CAMPOS HOTEL (SOLO EN HOTEL) -->
+      <!-- CAMPOS HOTEL -->
       <div id="hotel-dynamic-form">
         <div class="grid" style="gap: 5px;">
           <input type="number" id="room-camas" placeholder="Camas" value="1">
@@ -202,7 +202,7 @@
         <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
       </div>
 
-      <!-- CAMPOS COMERCIO (SOLO EN COMERCIO) -->
+      <!-- CAMPOS COMERCIO -->
       <div id="comercio-dynamic-form" class="hidden">
         <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
         <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">

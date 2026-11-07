@@ -1,4 +1,3 @@
-// CORE GAMS COMPANY
 const hotelFirebaseConfig = {
   apiKey: "AIzaSyDRavKFUBrMVE5YZUXTuieTuOkUWz4JWyo",
   authDomain: "gams-hoteleria.firebaseapp.com",
@@ -95,7 +94,7 @@ async function getLibroDiario(key) {
 async function registrarTransaccionDiaria(key, tipo, detalle, monto) {
   let raizKey = obtenerIdentificadorRaizNegocio(key);
   let transacciones = await getLibroDiario(raizKey);
-  let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (currentAccountKey.includes("admin") ? "Jefe / Administrador" : "Empleado");
+  let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (userRole === "ADMIN" ? "Jefe / Administrador" : "Empleado");
   
   transacciones.unshift({ fecha: new Date().toLocaleString(), tipo, detalle, monto, usuario: usuarioActual });
   localStorage.setItem(`gams_diario_${raizKey}`, JSON.stringify(transacciones));
@@ -245,12 +244,12 @@ window.validateAuth = function() {
     if (n.status === "SUSPENDIDO") continue;
     if (n.adminPass === inpVal || n.adminKey === inpVal) {
       foundNeg = n;
-      matchedRole = n.type === "Hotelería" ? "ADMIN_HOTEL" : "ADMIN_COMERCIO";
+      matchedRole = "ADMIN"; // Rol limpio para Jefes/Admins
       currentAccountKey = n.adminKey;
       break;
     } else if (n.empPass === inpVal || n.empKey === inpVal) {
       foundNeg = n;
-      matchedRole = n.type === "Hotelería" ? "EMPLEADO_HOTEL" : "EMPLEADO_COMERCIO";
+      matchedRole = "EMPLEADO"; // Rol limpio para Empleados
       currentAccountKey = n.empKey;
       break;
     }
@@ -327,7 +326,6 @@ function applyModuleTheme() {
     supBar.classList.add("hidden");
   }
 
-  // ADAPTACIÓN DEL FORMULARIO DINÁMICO SEGÚN MÓDULO
   const formHotel = document.getElementById("hotel-dynamic-form");
   const formComercio = document.getElementById("comercio-dynamic-form");
 
@@ -380,7 +378,7 @@ function configUI() {
   const divisaPanel = document.getElementById("divisa-admin-panel");
   const formAction = document.getElementById("container-actions-form");
   if (divisaPanel) {
-    if (userRole === "SUPERVISOR" || userRole.includes("ADMIN")) {
+    if (userRole === "SUPERVISOR" || userRole === "ADMIN") {
       divisaPanel.style.display = "block";
       if(formAction) formAction.style.display = "block";
     } else {
@@ -390,12 +388,10 @@ function configUI() {
   }
 }
 
-// RESTAURACIÓN DE AUDITORÍA Y GRÁFICOS
 async function mostrarPanelAuditoriaTasas() {
   document.getElementById("subpage-audit").classList.remove("hidden");
   const container = document.getElementById("audit-cards-container");
   container.innerHTML = "";
-
   let nombresEmpresas = [];
   let totalesVentasEmpresas = [];
 
@@ -426,13 +422,11 @@ async function mostrarPanelAuditoriaTasas() {
   });
 }
 
-// RESTAURACIÓN DE ANÁLISIS Y BI
 async function mostrarAnalyticAndRecommendations() {
   document.getElementById("subpage-analytics").classList.remove("hidden");
   const container = document.getElementById("analytics-content-container");
   const selectedBizKey = document.getElementById("analytics-target-biz").value || negociosRegistry[0].adminKey;
   let selectedNeg = negociosRegistry.find(n => n.adminKey === selectedBizKey) || negociosRegistry[0];
-
   let recomendacionTexto = `Se vendieron productos de alta demanda en ${selectedNeg.bizName}. Se sugiere reponer stock y colocar ofertas visibles para incrementar las conversiones semanales.`;
 
   container.innerHTML = `
@@ -458,7 +452,6 @@ window.enviarReporteBIPDF = function(nombreNegocio, recomendacion) {
   alert("✅ Reporte PDF descargado.");
 }
 
-// RESTAURACIÓN DE GESTIÓN DE CUENTAS
 function mostrarGestionCuentas() {
   document.getElementById("subpage-accounts").classList.remove("hidden");
   const tbody = document.getElementById("accounts-control-table");
@@ -471,7 +464,7 @@ function mostrarGestionCuentas() {
         <td><strong>${neg.bizName}</strong></td>
         <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
         <td>${neg.type}</td>
-        <td>Base Standard</td>
+        <td>Standard</td>
         <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
         <td>${neg.expiry || '2030-12-04'}</td>
         <td>
@@ -497,7 +490,7 @@ window.registrarNuevaCuentaUnificada = async function() {
   negociosRegistry.push({ id, bizName, type, dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
   await saveNegociosRegistry(negociosRegistry);
   mostrarGestionCuentas();
-  alert(`🎉 Negocio "${bizName}" registrado con éxito.`);
+  alert(`🎉 Negocio "${bizName}" registrado.`);
 }
 
 window.toggleEstadoNegocio = async function(idx) {
@@ -507,14 +500,13 @@ window.toggleEstadoNegocio = async function(idx) {
 }
 
 window.eliminarNegocio = async function(idx) {
-  if (confirm("¿Eliminar negocio de la plataforma?")) {
+  if (confirm("¿Eliminar negocio?")) {
     negociosRegistry.splice(idx, 1);
     await saveNegociosRegistry(negociosRegistry);
     mostrarGestionCuentas();
   }
 }
 
-// CREACIÓN DE ELEMENTOS CON FOTO BASE64
 let imagenBase64Procesada = "";
 window.procesarImagenSeleccionada = function(event) {
   const file = event.target.files[0];
@@ -567,7 +559,7 @@ window.createProd = async function() {
   }
 
   await saveDbItems(currentAccountKey, curr);
-  await registrarTransaccionDiaria(currentAccountKey, "ALTA DE ELEMENTO", `Nuevo ítem: ${name}`, 0);
+  await registrarTransaccionDiaria(currentAccountKey, "ALTA", `Nuevo ítem: ${name}`, 0);
   limpiarImagenCargada();
   alert("¡Elemento guardado!");
   if(activeModule === "HOTEL") switchHotelTab('rooms');

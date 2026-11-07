@@ -2,36 +2,59 @@ window.renderChatAI = function() {
   const container = document.getElementById("chat-ai-container");
   if (!container) return;
   container.innerHTML = `
-    <button class="gams-ai-chat-btn" onclick="toggleGamsAIChat()" title="Asistente Michael GAMS">🤖</button>
+    <button class="gams-ai-chat-btn" onclick="toggleGamsAIChat()" title="Asistente GAMS">🤖</button>
     <div id="gams-ai-chat-window" class="gams-ai-chat-window hidden">
       <div class="gams-ai-chat-header">
         <span>🤖 Michael - GAMS</span>
         <button style="background:none; border:none; color:white; font-size:16px; cursor:pointer;" onclick="toggleGamsAIChat()">✖</button>
       </div>
       <div id="gams-ai-chat-body" class="gams-ai-chat-body">
-        <div class="gams-ai-msg assistant">¡Hola! Soy Michael, tu asistente interactivo de <strong>GAMS Company</strong>. ¿En qué puedo ayudarte hoy?</div>
+        <div class="gams-ai-msg assistant" id="gams-saludo-inicial">¡Hola! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?</div>
       </div>
+      
+      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div style="padding: 6px 10px; background: #e9ecef; display: flex; gap: 4px; flex-wrap: wrap; border-top: 1px solid #ced4da;">
-        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Ver Precios y Paquetes')">💵 Precios</button>
+        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Ver Precios')">💵 Precios</button>
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #28a745;" onclick="preguntaRapida('Asesoramiento Contable')">📊 Contabilidad</button>
-        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #ffc107; color: #212529;" onclick="preguntaRapida('Instrucciones de Uso')">❓ Ayuda/Pasos</button>
+        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #ffc107; color: #212529;" onclick="preguntaRapida('Ayuda')">❓ Ayuda</button>
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #dc3545;" onclick="preguntaRapida('Soporte Técnico')">📞 Soporte</button>
       </div>
+
       <div class="gams-ai-chat-footer" style="padding:10px; display:flex; gap:5px; background:#fff; border-top:1px solid #ccc;">
         <input type="text" id="gams-ai-input" placeholder="Escribe tu consulta..." onkeypress="if(event.key === 'Enter') enviarPreguntaGamsAI()">
         <button class="btn-success" style="width:auto; margin:0;" onclick="enviarPreguntaGamsAI()">Enviar</button>
       </div>
     </div>
   `;
+  actualizarSaludoSegunRol();
 }
 
 window.toggleGamsAIChat = function() {
   document.getElementById("gams-ai-chat-window").classList.toggle("hidden");
+  actualizarSaludoSegunRol();
 }
 
 window.preguntaRapida = function(texto) {
   document.getElementById("gams-ai-input").value = texto;
   enviarPreguntaGamsAI();
+}
+
+function actualizarSaludoSegunRol() {
+  const saludoBox = document.getElementById("gams-saludo-inicial");
+  if (!saludoBox) return;
+  
+  let rol = (window.userRole || "").trim().toUpperCase();
+  let tratamiento = "Empleado";
+  
+  if (rol === "SUPERVISOR") {
+    tratamiento = "Gibrand";
+  } else if (rol === "ADMIN") {
+    tratamiento = "Jefe";
+  } else {
+    tratamiento = "Empleado";
+  }
+  
+  saludoBox.innerHTML = `¡Hola <strong>${tratamiento}</strong>! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?`;
 }
 
 window.enviarPreguntaGamsAI = async function() {
@@ -45,68 +68,54 @@ window.enviarPreguntaGamsAI = async function() {
   inp.value = "";
   body.scrollTop = body.scrollHeight;
 
-  let rolActual = window.userRole || "EMPLEADO"; 
-  let esJefeOAdmin = rolActual === "SUPERVISOR" || rolActual.includes("ADMIN");
+  let rolActual = (window.userRole || "").trim().toUpperCase();
+  let esJefeOAdmin = rolActual === "SUPERVISOR" || rolActual === "ADMIN";
 
-  // Restricción de espionaje entre cuentas ajenas
   if (["otra cuenta", "otro negocio", "cuanto vende", "datos de la empresa", "ver comercios"].some(p => txt.includes(p)) && rolActual !== "SUPERVISOR") {
     body.innerHTML += `<div class="gams-ai-msg assistant">⛔ **Acceso Denegado:** Esta información está clasificada o la cuenta no tiene los permisos suficientes.</div>`;
     body.scrollTop = body.scrollHeight;
     return;
   }
 
-  // Restricción de métricas gerenciales para empleados
-  if (rolActual.includes("EMPLEADO") && ["reporte de ventas", "ganancias totales", "balance general"].some(p => txt.includes(p))) {
-    body.innerHTML += `<div class="gams-ai-msg assistant">🔒 **Permiso Insuficiente:** Como empleado, solo tienes acceso a funciones operativas de tu puesto.</div>`;
+  if (rolActual === "EMPLEADO" && ["reporte de ventas", "ganancias totales", "balance general"].some(p => txt.includes(p))) {
+    body.innerHTML += `<div class="gams-ai-msg assistant">🔒 **Permiso Insuficiente:** Como empleado, solo tienes acceso a funciones operativas.</div>`;
     body.scrollTop = body.scrollHeight;
     return;
   }
 
   let respuestaPredeterminada = "";
 
-  // EXPLICACIÓN DEL CARRITO (DISPONIBLE PARA EMPLEADOS Y JEFES)
-  if (txt.includes("carrito") || txt.includes("como usar el carrito") || txt.includes("pos") || txt.includes("venta")) {
+  if (txt.includes("carrito") || txt.includes("pos") || txt.includes("venta")) {
     respuestaPredeterminada = `
-🛒 <strong>Paso a Paso para usar el Carrito / POS (Empleados y Jefes):</strong>
-1. Abre el <strong>Módulo Comercio</strong> y ve a la pestaña <strong>"🛒 POS & Carrito"</strong>.
-2. Selecciona el producto del menú desplegable o escanea su código SKU.
-3. Elige la cantidad deseada y haz clic en <strong>"➕ Agregar al Carrito"</strong>.
-4. El sistema calculará automáticamente el total en <strong>USD ($)</strong> y su equivalente oficial en <strong>Bolívares (Bs)</strong>.
-5. Haz clic en <strong>"💳 Procesar Venta"</strong> para descontar el stock del inventario y registrar la transacción en el Libro Diario.
+🛒 <strong>Uso del Carrito / POS:</strong>
+1. Ve al <strong>Módulo Comercio</strong> > pestaña <strong>"🛒 POS & Carrito"</strong>.
+2. Selecciona el producto y la cantidad deseada.
+3. Haz clic en <strong>"➕ Agregar al Carrito"</strong>.
+4. Presiona <strong>"💳 Procesar Venta"</strong> para descontar stock y registrar el movimiento.
     `;
-  }
-  
-  // EXPLICACIÓN DE EDICIÓN DE MONEDAS (EXCLUSIVO PARA JEFES / ADMIN Y SUPERVISOR)
-  else if (txt.includes("moneda") || txt.includes("editar dolar") || txt.includes("tasa") || txt.includes("cambiar precio dolar")) {
+  } else if (txt.includes("moneda") || txt.includes("dolar") || txt.includes("tasa")) {
     if (!esJefeOAdmin) {
-      respuestaPredeterminada = `🔒 **Restringido:** Solo los Jefes (Administradores) y el Supervisor General tienen permisos para modificar las tasas de cambio de divisas.`;
+      respuestaPredeterminada = `🔒 **Restringido:** Solo los Jefes y el Supervisor General pueden modificar las tasas de cambio de divisas.`;
     } else {
       respuestaPredeterminada = `
-⚙️ <strong>Paso a Paso para Editar Tasas de Cambio (Jefes y Supervisor):</strong>
-1. En la parte superior de la pantalla, haz clic en el botón gris <strong>"⚙️ Establecer Tasas de Cambio del Negocio"</strong>.
-2. Ingresa los nuevos valores para el <strong>Dólar (Bs)</strong>, <strong>Euro (Bs)</strong>, <strong>USDT / Cripto (Bs)</strong> o <strong>Bitcoin ($ USD)</strong>.
-3. Haz clic en <strong>"💾 Guardar Tasas"</strong>. Todos los precios en Bolívares del carrito se actualizarán de inmediato.
+⚙️ <strong>Modificar Tasas de Cambio:</strong>
+1. Haz clic en <strong>"⚙️ Establecer Tasas de Cambio del Negocio"</strong> arriba en la pantalla principal.
+2. Actualiza los valores de Dólar, Euro o USDT y guarda los cambios.
       `;
     }
-  }
-
-  // INSTRUCCIONES DE CREAR ELEMENTOS (JEFES VS EMPLEADOS)
-  else if (txt.includes("como agregar") || txt.includes("crear") || txt.includes("pasos")) {
+  } else if (txt.includes("como agregar") || txt.includes("crear") || txt.includes("pasos") || txt.includes("ayuda")) {
     if (!esJefeOAdmin && (txt.includes("producto") || txt.includes("cuarto"))) {
-      respuestaPredeterminada = `🔒 **Restringido:** Los empleados no tienen permisos para registrar o modificar el inventario/cuartos. Esta acción es exclusiva de los Jefes (Administradores).`;
-    } else if (txt.includes("producto") || txt.includes("inventario")) {
-      respuestaPredeterminada = `📦 <strong>Agregar Producto (Exclusivo Jefe / Admin):</strong> Ve a Módulo Comercio > Formulario inferior ("Registrar Elemento") > Ingresa SKU, Nombre, Stock, Precio y haz clic en Guardar.`;
-    } else if (txt.includes("cuarto") || txt.includes("habitacion")) {
-      respuestaPredeterminada = `🏨 <strong>Registrar Cuarto (Exclusivo Jefe / Admin):</strong> Ve a Módulo Hotel > Sección final > Ingresa código, camas, baños, tarifas y haz clic en Guardar.`;
-    } else if (txt.includes("cita")) {
-      respuestaPredeterminada = `📅 <strong>Agendar Cita:</strong> Ve a Módulo Citas > Selecciona barbero y fecha > Completa los datos del cliente y confirma.`;
+      respuestaPredeterminada = `🔒 **Restringido:** Los empleados no tienen permisos para crear productos o cuartos (función exclusiva de Jefes).`;
+    } else if (txt.includes("producto")) {
+      respuestaPredeterminada = `📦 <strong>Crear Producto:</strong> Ve al Módulo Comercio > sección inferior "Registrar Elemento" > Rellena los datos y guarda.`;
+    } else if (txt.includes("cuarto")) {
+      respuestaPredeterminada = `🏨 <strong>Registrar Cuarto:</strong> Ve al Módulo Hotel > sección inferior "Registrar Elemento" > Completa las tarifas y guarda.`;
+    } else {
+      respuestaPredeterminada = `❓ Guía rápida: Usa los menús superiores para cambiar de módulo y los formularios inferiores para registrar elementos.`;
     }
-  }
-
-  // PRECIOS Y SOPORTE
-  else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete")) {
-    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Inventario ($15), Hotelería ($25), Agendas ($25). Combos: 2 módulos ($35-$40), Full Suite ($50). Incluye análisis BI (máx. 1 vez por semana).`;
-  } else if (txt.includes("soporte") || txt.includes("telefono") || txt.includes("contacto")) {
+  } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete")) {
+    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Inventario ($15), Hotelería ($25), Citas ($25). Combos y Full Suite disponibles.`;
+  } else if (txt.includes("soporte") || txt.includes("telefono")) {
     respuestaPredeterminada = `📞 <strong>Soporte Técnico GAMS:</strong> Comunícate con <strong>Gibrand Marron</strong> al <strong>+58 4242015806</strong>.`;
   }
 
@@ -124,7 +133,7 @@ window.enviarPreguntaGamsAI = async function() {
     const res = await fetch('https://gibrand-digital-cores.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: `[Rol: ${rolActual}] Consulta: ${textoOriginal}`, device: 'GAMS Netlify' })
+      body: JSON.stringify({ prompt: `[Rol: ${rolActual}] Consulta: ${textoOriginal}`, device: 'GAMS' })
     });
     const data = await res.json();
     document.getElementById(loadingId).remove();
