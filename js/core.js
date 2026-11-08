@@ -248,6 +248,7 @@ window.guardarTasasCuenta = async function() {
   alert(`¡Tasas oficiales guardadas!`);
 }
 
+// 🛡️ VALIDACIÓN ESTRICTA: El link de referido NO otorga acceso; se requiere clave existente obligatoria
 window.validateAuth = function() {
   const inpVal = document.getElementById("license-input").value.trim();
   if (!inpVal) return;
@@ -285,15 +286,19 @@ window.validateAuth = function() {
       modAsignado = "COMERCIO";
     }
 
-    if (foundNeg.refCode && !localStorage.getItem(`counted_ref_${foundNeg.id}`)) {
-      localStorage.setItem(`counted_ref_${foundNeg.id}`, "true");
-      registrarPuntoReferidoAutomatico(foundNeg.refCode, foundNeg.precioLicencia || 15);
+    // Si entró a través de un enlace de referido activo en el navegador, asociamos el código si no lo tenía y sumamos la comisión
+    let refAsociado = localStorage.getItem("gams_ref_active");
+    if (refAsociado && !foundNeg.refCode) {
+      foundNeg.refCode = refAsociado;
+      registrarPuntoReferidoAutomatico(refAsociado, foundNeg.precioLicencia || 15);
+      saveNegociosRegistry(negociosRegistry);
     }
 
     saveAndReload(matchedRole, modAsignado, currentAccountKey);
     return;
   }
-  document.getElementById("error-msg").innerText = "❌ Clave incorrecta.";
+
+  document.getElementById("error-msg").innerText = "❌ Clave de acceso incorrecta. El enlace de referido no otorga acceso sin claves válidas.";
   document.getElementById("error-msg").style.display = "block";
 }
 
