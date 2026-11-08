@@ -42,16 +42,8 @@
     </div>
   </div>
 
-  <!-- BARRA SUPERIOR (SUPERVISOR) -->
-  <div id="supervisor-system-bar" class="main-system-tabs hidden">
-    <button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Módulo Hotel</button>
-    <button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Módulo Comercio</button>
-    <button id="sys-tab-citas" onclick="switchSystemModule('CITAS')">📅 Módulo Citas</button>
-    <button id="sys-tab-referidos" onclick="switchSystemModule('REFERIDOS')">🤝 Módulo Referidos</button>
-    <button id="sys-tab-audit" onclick="switchSystemModule('AUDIT')">📊 Auditoría</button>
-    <button id="sys-tab-analytics" onclick="switchSystemModule('ANALYTICS')">📈 Análisis BI</button>
-    <button id="sys-tab-accounts" onclick="switchSystemModule('ACCOUNTS')">⚙️ Cuentas</button>
-  </div>
+  <!-- BARRA DE PESTAÑAS DINÁMICA SEGÚN MÓDULOS ACTIVOS DEL NEGOCIO -->
+  <div id="dynamic-business-nav" class="main-system-tabs"></div>
 
   <div id="supervisor-account-selector-box" class="hidden" style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
     <label style="font-weight: bold; font-size: 13px;">🔎 Buscar o Seleccionar Negocio:</label>

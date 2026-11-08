@@ -275,13 +275,16 @@ window.validateAuth = function() {
   }
 
   if (foundNeg) {
-    let listMods = foundNeg.modules || ["Inventario / Comercio"];
+    let listMods = foundNeg.modules || [foundNeg.type || "Inventario / Comercio"];
     let modAsignado = "COMERCIO";
-    if (listMods.includes("Hotelería")) modAsignado = "HOTEL";
-    else if (listMods.includes("Citas y Agendas")) modAsignado = "CITAS";
-    else if (listMods.includes("Inventario / Comercio")) modAsignado = "COMERCIO";
+    if (listMods.includes("Hotelería") || listMods.includes("Hotel")) {
+      modAsignado = "HOTEL";
+    } else if (listMods.includes("Citas y Agendas") || listMods.includes("Citas")) {
+      modAsignado = "CITAS";
+    } else if (listMods.includes("Inventario / Comercio") || listMods.includes("Comercio")) {
+      modAsignado = "COMERCIO";
+    }
 
-    // Si es el primer inicio de sesión de este negocio por referido, sumar al promotor automáticamente una sola vez
     if (foundNeg.refCode && !localStorage.getItem(`counted_ref_${foundNeg.id}`)) {
       localStorage.setItem(`counted_ref_${foundNeg.id}`, "true");
       registrarPuntoReferidoAutomatico(foundNeg.refCode, foundNeg.precioLicencia || 15);
@@ -302,7 +305,7 @@ function registrarPuntoReferidoAutomatico(codigoRef, precio) {
   if (promotor) {
     promotor.traidos = (promotor.traidos || 0) + 1;
     promotor.ventas = (promotor.ventas || 0) + precio;
-    promotor.comision = promotor.ventas * 0.50; // 50% de comisión
+    promotor.comision = promotor.ventas * 0.50; 
     localStorage.setItem("gams_promotores_referidos", JSON.stringify(promotores));
   }
 }
@@ -323,7 +326,16 @@ window.switchSystemModule = async function(mod) {
   activeModule = mod;
   localStorage.setItem("gams_active_module", mod);
   applyModuleTheme();
-  configUI();
+
+  document.querySelectorAll(".main-system-tabs button").forEach(b => b.classList.remove("active-sys"));
+  if(mod === "HOTEL" && document.getElementById("sys-tab-hotel")) document.getElementById("sys-tab-hotel").classList.add("active-sys");
+  if(mod === "COMERCIO" && document.getElementById("sys-tab-comercio")) document.getElementById("sys-tab-comercio").classList.add("active-sys");
+  if(mod === "CITAS" && document.getElementById("sys-tab-citas")) document.getElementById("sys-tab-citas").classList.add("active-sys");
+  if(mod === "REFERIDOS" && document.getElementById("sys-tab-referidos")) document.getElementById("sys-tab-referidos").classList.add("active-sys");
+  if(mod === "AUDIT" && document.getElementById("sys-tab-audit")) document.getElementById("sys-tab-audit").classList.add("active-sys");
+  if(mod === "ANALYTICS" && document.getElementById("sys-tab-analytics")) document.getElementById("sys-tab-analytics").classList.add("active-sys");
+  if(mod === "ACCOUNTS" && document.getElementById("sys-tab-accounts")) document.getElementById("sys-tab-accounts").classList.add("active-sys");
+
   await cargarTasasEnPantalla();
 
   document.getElementById("modulo-hotel-container").classList.add("hidden");
@@ -371,22 +383,6 @@ window.switchSystemModule = async function(mod) {
 function applyModuleTheme() {
   const hotelNav = document.getElementById("hotel-nav");
   const comercioNav = document.getElementById("comercio-nav");
-  const supBar = document.getElementById("supervisor-system-bar");
-
-  if (userRole === "SUPERVISOR") {
-    supBar.classList.remove("hidden");
-    document.querySelectorAll(".main-system-tabs button").forEach(b => b.classList.remove("active-sys"));
-    if(activeModule === "HOTEL" && document.getElementById("sys-tab-hotel")) document.getElementById("sys-tab-hotel").classList.add("active-sys");
-    if(activeModule === "COMERCIO" && document.getElementById("sys-tab-comercio")) document.getElementById("sys-tab-comercio").classList.add("active-sys");
-    if(activeModule === "CITAS" && document.getElementById("sys-tab-citas")) document.getElementById("sys-tab-citas").classList.add("active-sys");
-    if(activeModule === "REFERIDOS" && document.getElementById("sys-tab-referidos")) document.getElementById("sys-tab-referidos").classList.add("active-sys");
-    if(activeModule === "AUDIT" && document.getElementById("sys-tab-audit")) document.getElementById("sys-tab-audit").classList.add("active-sys");
-    if(activeModule === "ANALYTICS" && document.getElementById("sys-tab-analytics")) document.getElementById("sys-tab-analytics").classList.add("active-sys");
-    if(activeModule === "ACCOUNTS" && document.getElementById("sys-tab-accounts")) document.getElementById("sys-tab-accounts").classList.add("active-sys");
-  } else {
-    supBar.classList.add("hidden");
-  }
-
   const formHotel = document.getElementById("hotel-dynamic-form");
   const formComercio = document.getElementById("comercio-dynamic-form");
 
@@ -420,12 +416,13 @@ function configUI() {
   let statusTxt = "ACTIVO";
   let expiryTxt = "2030-12-04";
 
+  let matchedNeg = null;
   if (userRole === "SUPERVISOR") {
     cleanBizTxt = "👑 Dueño de GAMS Company";
     statusTxt = "ACTIVO (♾️ Infinito)";
     expiryTxt = "♾️ Perpetua e Ilimitada";
-  } else if (userRole !== "SUPERVISOR") {
-    let matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
+  } else {
+    matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
     if (matchedNeg) {
       cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Jefe / Administrador" : "Empleado";
       cleanBizTxt = matchedNeg.bizName;
@@ -438,6 +435,36 @@ function configUI() {
   if(document.getElementById("user-business-clean")) document.getElementById("user-business-clean").innerText = cleanBizTxt;
   if(document.getElementById("display-account-status")) document.getElementById("display-account-status").innerText = statusTxt;
   if(document.getElementById("display-license-expiry")) document.getElementById("display-license-expiry").innerText = expiryTxt;
+
+  const navContainer = document.getElementById("dynamic-business-nav");
+  if (navContainer) {
+    navContainer.innerHTML = "";
+    if (userRole === "SUPERVISOR") {
+      navContainer.innerHTML = `
+        <button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Módulo Hotel</button>
+        <button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Módulo Comercio</button>
+        <button id="sys-tab-citas" onclick="switchSystemModule('CITAS')">📅 Módulo Citas</button>
+        <button id="sys-tab-referidos" onclick="switchSystemModule('REFERIDOS')">🤝 Referidos</button>
+        <button id="sys-tab-audit" onclick="switchSystemModule('AUDIT')">📊 Auditoría</button>
+        <button id="sys-tab-analytics" onclick="switchSystemModule('ANALYTICS')">📈 Análisis BI</button>
+        <button id="sys-tab-accounts" onclick="switchSystemModule('ACCOUNTS')">⚙️ Cuentas</button>
+      `;
+    } else if (matchedNeg && matchedNeg.modules) {
+      matchedNeg.modules.forEach(modName => {
+        if (modName.includes("Hotelería") || modName.includes("Hotel")) {
+          navContainer.innerHTML += `<button id="sys-tab-hotel" onclick="switchSystemModule('HOTEL')">🏨 Hotel</button>`;
+        }
+        if (modName.includes("Inventario") || modName.includes("Comercio")) {
+          navContainer.innerHTML += `<button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Comercio</button>`;
+        }
+        if (modName.includes("Citas") || modName.includes("Agendas")) {
+          navContainer.innerHTML += `<button id="sys-tab-citas" onclick="switchSystemModule('CITAS')">📅 Citas</button>`;
+        }
+      });
+    } else {
+      navContainer.innerHTML = `<button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Comercio</button>`;
+    }
+  }
 
   const divisaPanel = document.getElementById("divisa-admin-panel");
   const formAction = document.getElementById("container-actions-form");
