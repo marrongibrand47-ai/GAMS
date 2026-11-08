@@ -140,6 +140,14 @@
         </div>
       </div>
 
+      <!-- SELECTOR DE REFERIDO VINCULADO -->
+      <div style="margin: 10px 0;">
+        <label style="font-weight: bold; font-size: 13px; color: #555;">🤝 Asignar Promotor / Referido (Opcional):</label>
+        <select id="new-account-ref-select" style="font-weight: bold; color: #0056b3; margin-top: 4px;">
+          <option value="">-- Sin referido directo --</option>
+        </select>
+      </div>
+
       <div class="grid" style="gap:10px; margin-top:5px;">
         <input type="text" id="new-account-pass-admin" placeholder="🔑 Clave Admin (Jefe)">
         <input type="text" id="new-account-pass-emp" placeholder="🔑 Clave Empleado">
@@ -149,7 +157,7 @@
     <div style="overflow-x: auto;">
       <table>
         <thead>
-          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Módulos Activos</th><th>Precio Licencia</th><th>Estado</th><th>Acciones</th></tr>
+          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Módulos & Vencimiento</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
         </thead>
         <tbody id="accounts-control-table"></tbody>
       </table>
