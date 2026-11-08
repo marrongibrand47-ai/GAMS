@@ -45,17 +45,17 @@ function sumarUnMesALecha(fechaStr) {
 }
 
 const defaultNegocios = [
-  { id: "hotel_costa_real", bizName: "Hotel Costa Real", modules: ["Hotelería"], precioLicencia: 25, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" },
-  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", modules: ["Inventario / Comercio"], precioLicencia: 15, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" }
+  { id: "hotel_costa_real", bizName: "Hotel Costa Real", modules: ["Hotelería"], precioLicencia: 35, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] },
+  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", modules: ["Inventario / Comercio"], precioLicencia: 20, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] }
 ];
 
 function obtenerIdentificadorRaizNegocio(key) {
-  let neg = negociosRegistry.find(n => n.adminKey === key || n.empKey === key);
+  let neg = negociosRegistry.find(n => n.adminKey === key || n.empKey === key || (n.empleadosExtra && n.empleadosExtra.some(e => e.pass === key || e.key === key)));
   return neg ? neg.adminKey : key;
 }
 
 async function getDbForBusiness(accountKey) {
-  let neg = negociosRegistry.find(n => n.adminKey === accountKey || n.empKey === accountKey);
+  let neg = negociosRegistry.find(n => n.adminKey === accountKey || n.empKey === accountKey || (n.empleadosExtra && n.empleadosExtra.some(e => e.pass === accountKey || e.key === accountKey)));
   if (neg && neg.dbTarget === "VIEJA") return dbOld;
   return (activeModule === "HOTEL") ? dbHotel : (neg && neg.modules && neg.modules.includes("Inventario / Comercio") ? dbOld : dbHotel);
 }
@@ -101,7 +101,7 @@ async function getLibroDiario(key) {
 async function registrarTransaccionDiaria(key, tipo, detalle, monto) {
   let raizKey = obtenerIdentificadorRaizNegocio(key);
   let transacciones = await getLibroDiario(raizKey);
-  let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (userRole === "ADMIN" ? "Jefe / Administrador" : "Empleado");
+  let usuarioActual = userRole === "SUPERVISOR" ? "Supervisor" : (userRole === "ADMIN" ? "Jefe / Administrador" : "Empleado (" + userRole + ")");
   
   transacciones.unshift({ fecha: new Date().toLocaleString(), tipo, detalle, monto, usuario: usuarioActual });
   localStorage.setItem(`gams_diario_${raizKey}`, JSON.stringify(transacciones));
@@ -112,6 +112,47 @@ async function registrarTransaccionDiaria(key, tipo, detalle, monto) {
     } catch(e) { console.error(e); }
   }
 }
+
+window.descargarPDFYVaciarLibro = async function(key, nombreNegocio) {
+  let transacciones = await getLibroDiario(key);
+  if (transacciones.length === 0) return alert("No hay transacciones registradas para exportar.");
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFont("times", "bold");
+  doc.setFontSize(15);
+  doc.text(`LIBRO DIARIO DE VENTAS - ${nombreNegocio}`, 14, 20);
+  doc.setFont("times", "normal");
+  doc.setFontSize(10);
+  doc.text(`Fecha de corte: ${new Date().toLocaleString()} | CI: 32751191`, 14, 27);
+
+  let y = 35;
+  transacciones.forEach((t) => {
+    if (y > 270) { doc.addPage(); y = 20; }
+    doc.text(`${t.fecha} | [${t.tipo}] ${t.detalle} | Monto: $${t.monto.toFixed(2)} USD | User: ${t.usuario}`, 14, y);
+    y += 7;
+  });
+
+  doc.save(`Libro_Diario_${nombreNegocio.replace(/\s+/g, '_')}.pdf`);
+
+  let raizKey = obtenerIdentificadorRaizNegocio(key);
+  localStorage.setItem(`gams_diario_${raizKey}`, JSON.stringify([]));
+  
+  if (navigator.onLine) {
+    try {
+      let activeDb = await getDbForBusiness(raizKey);
+      await activeDb.collection("gams_diario").doc(raizKey).set({ transacciones: [] });
+      alert(`✅ Reporte PDF descargado y libro diario de "${nombreNegocio}" vaciado exitosamente en la nube y local.`);
+    } catch(e) {
+      console.warn("Fallo temporal de red al limpiar en la nube:", e);
+      alert(`⚠️ PDF descargado y vaciado localmente. Se sincronizará el vaciado en la nube al recuperar conexión estable.`);
+    }
+  } else {
+    alert(`⚠️ Dispositivo offline: PDF descargado y vaciado localmente. Se sincronizará en la nube al reconectar.`);
+  }
+
+  if(window.switchSystemModule) window.switchSystemModule(activeModule);
+};
 
 async function initFirebaseData() {
   let localReg = localStorage.getItem("gams_negocios_registry");
@@ -243,7 +284,7 @@ window.guardarTasasCuenta = async function() {
     usdt: parseFloat(document.getElementById("inp-usdt").value) || 36.85,
     btc: document.getElementById("inp-btc").value.trim() || "$91,400"
   };
-  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
+  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey || (n.empleadosExtra && n.empleadosExtra.some(e => e.pass === currentAccountKey)));
   if (neg) {
     await saveTasas(neg.adminKey, nuevasTasas);
     await saveTasas(neg.empKey, nuevasTasas);
@@ -278,6 +319,11 @@ window.validateAuth = function() {
       matchedRole = "EMPLEADO";
       currentAccountKey = n.empKey;
       break;
+    } else if (n.empleadosExtra && n.empleadosExtra.some(e => e.pass === inpVal)) {
+      foundNeg = n;
+      matchedRole = "EMPLEADO_EXTRA";
+      currentAccountKey = inpVal;
+      break;
     }
   }
 
@@ -295,7 +341,7 @@ window.validateAuth = function() {
     let refAsociado = localStorage.getItem("gams_ref_active");
     if (refAsociado && !foundNeg.refCode) {
       foundNeg.refCode = refAsociado;
-      registrarPuntoReferidoAutomatico(refAsociado, foundNeg.precioLicencia || 15);
+      registrarPuntoReferidoAutomatico(refAsociado, foundNeg.precioLicencia || 20);
       saveNegociosRegistry(negociosRegistry);
     }
 
@@ -345,6 +391,7 @@ window.switchSystemModule = async function(mod) {
   if(mod === "AUDIT" && document.getElementById("sys-tab-audit")) document.getElementById("sys-tab-audit").classList.add("active-sys");
   if(mod === "ANALYTICS" && document.getElementById("sys-tab-analytics")) document.getElementById("sys-tab-analytics").classList.add("active-sys");
   if(mod === "ACCOUNTS" && document.getElementById("sys-tab-accounts")) document.getElementById("sys-tab-accounts").classList.add("active-sys");
+  if(mod === "EMPLEADOS" && document.getElementById("sys-tab-empleados")) document.getElementById("sys-tab-empleados").classList.add("active-sys");
 
   await cargarTasasEnPantalla();
 
@@ -355,6 +402,7 @@ window.switchSystemModule = async function(mod) {
   document.getElementById("subpage-audit").classList.add("hidden");
   document.getElementById("subpage-analytics").classList.add("hidden");
   document.getElementById("subpage-accounts").classList.add("hidden");
+  document.getElementById("subpage-empleados-admin").classList.add("hidden");
 
   let tituloSys = "Sistema GAMS";
   let iconoSys = "💼";
@@ -375,6 +423,10 @@ window.switchSystemModule = async function(mod) {
     document.getElementById("modulo-referidos-container").classList.remove("hidden");
     if(window.renderModuloReferidos) window.renderModuloReferidos();
     tituloSys = "Programa de Referidos"; iconoSys = "🤝";
+  } else if (mod === "EMPLEADOS") {
+    document.getElementById("subpage-empleados-admin").classList.remove("hidden");
+    renderizarGestionEmpleadosAdmin();
+    tituloSys = "Gestión de Empleados"; iconoSys = "👥";
   } else if (mod === "AUDIT") {
     mostrarPanelAuditoriaTasas();
     tituloSys = "Auditoría General y Ventas"; iconoSys = "📊";
@@ -432,9 +484,9 @@ function configUI() {
     statusTxt = "ACTIVO (♾️ Infinito)";
     expiryTxt = "♾️ Perpetua e Ilimitada";
   } else {
-    matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
+    matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey || (n.empleadosExtra && n.empleadosExtra.some(e => e.pass === currentAccountKey)));
     if (matchedNeg) {
-      cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Jefe / Administrador" : "Empleado";
+      cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Jefe / Administrador" : "Empleado Sub-nivel";
       cleanBizTxt = matchedNeg.bizName;
       statusTxt = matchedNeg.status || "ACTIVO";
       expiryTxt = matchedNeg.expiry || "2030-12-04";
@@ -471,6 +523,9 @@ function configUI() {
           navContainer.innerHTML += `<button id="sys-tab-citas" onclick="switchSystemModule('CITAS')">📅 Citas</button>`;
         }
       });
+      if (userRole === "ADMIN") {
+        navContainer.innerHTML += `<button id="sys-tab-empleados" onclick="switchSystemModule('EMPLEADOS')" style="background-color: #6f42c1;">👥 Empleados</button>`;
+      }
     } else {
       navContainer.innerHTML = `<button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Comercio</button>`;
     }
@@ -488,6 +543,78 @@ function configUI() {
       if(formAction) formAction.style.display = "none";
     }
   }
+}
+
+window.renderizarGestionEmpleadosAdmin = function() {
+  const tbody = document.getElementById("tabla-empleados-admin-list");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey);
+  if (!neg) return;
+
+  if (!neg.empleadosExtra) neg.empleadosExtra = [];
+
+  if (neg.empleadosExtra.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay cuentas de empleado adicionales creadas.</td></tr>`;
+    return;
+  }
+
+  neg.empleadosExtra.forEach((emp, idx) => {
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${emp.pass}</strong></td>
+        <td><span style="color:green; font-weight:bold;">🟢 Activo (+ $5/mes)</span></td>
+        <td><button class="btn-danger" style="padding:4px 10px; font-size:12px;" onclick="eliminarEmpleadoAdmin(${idx})">Eliminar</button></td>
+      </tr>`;
+  });
+}
+
+window.registrarNuevoEmpleadoAdmin = async function() {
+  const usuarioEmp = document.getElementById("new-emp-user").value.trim();
+  const claveEmp = document.getElementById("new-emp-pass").value.trim();
+  if (!usuarioEmp || !claveEmp) return alert("Ingresa el usuario y la clave del empleado.");
+
+  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey);
+  if (!neg) return;
+
+  if (!neg.empleadosExtra) neg.empleadosExtra = [];
+  neg.empleadosExtra.push({ pass: claveEmp, user: usuarioEmp });
+
+  neg.precioLicencia = (neg.precioLicencia || 20) + 5;
+
+  await saveNegociosRegistry(negociosRegistry);
+  document.getElementById("new-emp-user").value = "";
+  document.getElementById("new-emp-pass").value = "";
+  renderizarGestionEmpleadosAdmin();
+  alert(`✅ Cuenta de empleado "${usuarioEmp}" creada con éxito. Se ha sumado el sub-nivel de pago a la licencia.`);
+}
+
+window.eliminarEmpleadoAdmin = async function(idx) {
+  let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey);
+  if (!neg || !neg.empleadosExtra) return;
+
+  neg.empleadosExtra.splice(idx, 1);
+  neg.precioLicencia = Math.max(20, neg.precioLicencia - 5);
+  await saveNegociosRegistry(negociosRegistry);
+  renderizarGestionEmpleadosAdmin();
+  alert("🗑️ Cuenta de empleado eliminada.");
+}
+
+window.calcularPrecioNuevoNegocio = function() {
+  let p = 0;
+  let modulosSel = 0;
+  if (document.getElementById("mod-chk-comercio").checked) { p += 20; modulosSel++; }
+  if (document.getElementById("mod-chk-hotel").checked) { p += 35; modulosSel++; }
+  if (document.getElementById("mod-chk-citas").checked) { p += 30; modulosSel++; }
+
+  if (modulosSel >= 3) {
+    p = 65; 
+  } else if (modulosSel === 2 && document.getElementById("mod-chk-comercio").checked && document.getElementById("mod-chk-citas").checked) {
+    p = 40; 
+  }
+
+  const lbl = document.getElementById("lbl-precio-estimado");
+  if (lbl) lbl.innerText = `💡 Precio estimado con Combos: $${p} USD`;
 }
 
 async function mostrarPanelAuditoriaTasas() {
@@ -509,9 +636,10 @@ async function mostrarPanelAuditoriaTasas() {
     container.innerHTML += `
       <div style="background: #ffffff; border: 2px solid #212529; padding: 18px; border-radius: 8px;">
         <h4 style="margin-top:0; color:#212529;">${neg.bizName}</h4>
-        <p style="margin: 6px 0; font-size:12px; color:#555;">Jefe: ${neg.adminPass} | Emp: ${neg.empPass}</p>
+        <p style="margin: 6px 0; font-size:12px; color:#555;">Jefe: ${neg.adminPass} | Empleados Extra: ${(neg.empleadosExtra || []).length}</p>
         <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px;">
-          💵 Dólar: ${tasas.dolar} Bs | 📊 Movimientos: $${totalVentas.toFixed(2)} | 📦 Registros: ${dbData.length}
+          💵 Dólar: ${tasas.dolar} Bs | 📊 Movimientos: $${totalVentas.toFixed(2)} | 📦 Registros: ${dbData.length}<br>
+          <button class="btn-success" style="margin-top:8px; padding:6px; font-size:12px;" onclick="descargarPDFYVaciarLibro('${neg.adminKey}', '${neg.bizName}')">📥 Descargar PDF y Vaciar Libro</button>
         </div>
       </div>`;
   }
@@ -535,23 +663,8 @@ async function mostrarAnalyticAndRecommendations() {
     <div style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da;">
       <h4>📈 Reporte de Análisis BI (${selectedNeg.bizName})</h4>
       <p><strong>Recomendación Ejecutiva:</strong> ${recomendacionTexto}</p>
-      <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="enviarReporteBIPDF('${selectedNeg.bizName}', '${recomendacionTexto}')">📤 Descargar Reporte PDF</button>
+      <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="descargarPDFYVaciarLibro('${selectedNeg.adminKey}', '${selectedNeg.bizName}')">📤 Descargar Reporte PDF & Vaciar Libro</button>
     </div>`;
-}
-
-window.enviarReporteBIPDF = function(nombreNegocio, recomendacion) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  doc.setFont("times", "bold");
-  doc.setFontSize(16);
-  doc.text(`REPORTE EJECUTIVO DE INTELIGENCIA BI`, 14, 20);
-  doc.setFont("times", "normal");
-  doc.setFontSize(11);
-  doc.text(`Caracas, Venezuela | Fecha: ${new Date().toLocaleString()}`, 14, 27);
-  doc.text(`Negocio: ${nombreNegocio} | Emisor: Gibrand Marron (CI: 32751191)`, 14, 34);
-  doc.text(recomendacion, 14, 50, { maxWidth: 180 });
-  doc.save(`Analisis_BI_${nombreNegocio.replace(/\s+/g, '_')}.pdf`);
-  alert("✅ Reporte PDF descargado.");
 }
 
 function mostrarGestionCuentas() {
@@ -572,13 +685,13 @@ function mostrarGestionCuentas() {
   negociosRegistry.forEach((neg, idx) => {
     let isSuspended = neg.status === "SUSPENDIDO";
     let listaModulos = (neg.modules || ["Comercio"]).join(", ");
-    let precio = neg.precioLicencia || 15;
+    let precio = neg.precioLicencia || 20;
     let fechaVencimiento = neg.expiry || "2030-12-04";
 
     tbody.innerHTML += `
       <tr>
-        <td><strong>${neg.bizName}</strong><br><small>Ref: ${neg.refCode || 'Ninguno'}</small></td>
-        <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
+        <td><strong>${neg.bizName}</strong><br><small>Ref: ${neg.refCode || 'Ninguno'}</small><br><small>Pago: ${neg.payMode === 'ONLINE' ? '💳 En Línea' : '💵 Local'}</small></td>
+        <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass} (+${(neg.empleadosExtra||[]).length} sub-niveles)</td>
         <td><small>${listaModulos}</small><br>⏳ <strong>Vence:</strong> ${fechaVencimiento}</td>
         <td><strong>$${precio} USD</strong></td>
         <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
@@ -604,6 +717,7 @@ window.registrarNuevaCuentaUnificada = async function() {
   const adminPass = document.getElementById("new-account-pass-admin").value.trim();
   const empPass = document.getElementById("new-account-pass-emp").value.trim();
   const referidoElegido = document.getElementById("new-account-ref-select").value.trim();
+  const payMode = document.getElementById("new-account-pay-mode").value;
   
   let modulosSeleccionados = [];
   if (document.getElementById("mod-chk-comercio").checked) modulosSeleccionados.push("Inventario / Comercio");
@@ -615,11 +729,15 @@ window.registrarNuevaCuentaUnificada = async function() {
   }
 
   let precioTotal = 0;
+  let modulosSelCount = 0;
   modulosSeleccionados.forEach(m => {
-    if (m === "Inventario / Comercio") precioTotal += 15;
-    if (m === "Hotelería") precioTotal += 25;
-    if (m === "Citas y Agendas") precioTotal += 25;
+    if (m === "Inventario / Comercio") { precioTotal += 20; modulosSelCount++; }
+    if (m === "Hotelería") { precioTotal += 35; modulosSelCount++; }
+    if (m === "Citas y Agendas") { precioTotal += 30; modulosSelCount++; }
   });
+
+  if (modulosSelCount >= 3) precioTotal = 65;
+  else if (modulosSelCount === 2 && modulosSeleccionados.includes("Inventario / Comercio") && modulosSeleccionados.includes("Citas y Agendas")) precioTotal = 40;
 
   let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
   let adminKey = "biz_" + id + "_admin";
@@ -639,7 +757,9 @@ window.registrarNuevaCuentaUnificada = async function() {
     empPass, 
     status: "ACTIVO", 
     expiry: expiryStr,
-    refCode: codigoRefFinal 
+    refCode: codigoRefFinal,
+    payMode: payMode,
+    empleadosExtra: []
   });
 
   if (codigoRefFinal) {
@@ -665,29 +785,14 @@ window.eliminarNegocio = async function(idx) {
   }
 }
 
-let imagenBase64Procesada = "";
-window.procesarImagenSeleccionada = function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    imagenBase64Procesada = e.target.result;
-    document.getElementById("img-preview-tag").src = imagenBase64Procesada;
-    document.getElementById("img-preview-box").style.display = "block";
-  };
-  reader.readAsDataURL(file);
-};
-
 window.actualizarPreviaUrl = function(url) {
   if (url.trim()) {
-    imagenBase64Procesada = "";
     document.getElementById("img-preview-tag").src = url.trim();
     document.getElementById("img-preview-box").style.display = "block";
   }
 };
 
 window.limpiarImagenCargada = function() {
-  imagenBase64Procesada = "";
   document.getElementById("prod-img").value = "";
   document.getElementById("img-preview-box").style.display = "none";
 };
@@ -695,7 +800,7 @@ window.limpiarImagenCargada = function() {
 window.createProd = async function() {
   const barcode = document.getElementById("prod-barcode").value.trim() || "SKU-999";
   const name = document.getElementById("prod-name").value.trim();
-  const img = imagenBase64Procesada || document.getElementById("prod-img").value.trim() || defaultImgPlaceholder;
+  const img = document.getElementById("prod-img").value.trim() || defaultImgPlaceholder;
   if (!name) return alert("Ingresa un nombre.");
 
   let curr = await getDbItems(currentAccountKey);

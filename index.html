@@ -42,7 +42,7 @@
     </div>
   </div>
 
-  <!-- BARRA DE PESTAÑAS DINÁMICA SEGÚN MÓDULOS ACTIVOS DEL NEGOCIO -->
+  <!-- BARRA DE PESTAÑAS DINÁMICA SEGÚN MÓDULOS ACTIVOS -->
   <div id="dynamic-business-nav" class="main-system-tabs"></div>
 
   <div id="supervisor-account-selector-box" class="hidden" style="background: #e9ecef; padding: 12px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #ced4da;">
@@ -104,6 +104,21 @@
   <div id="modulo-citas-container" class="hidden"></div>
   <div id="modulo-referidos-container" class="hidden"></div>
 
+  <!-- SECCIÓN GESTIÓN DE EMPLEADOS (PARA ADMIN) -->
+  <div id="subpage-empleados-admin" class="hidden">
+    <h3>👥 Gestión de Empleados (Sub-niveles)</h3>
+    <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da; margin-bottom: 15px;">
+      <p style="font-size: 13px; color: #555;">Crea cuentas de empleado individuales para tus cajeros o personal de turno. Cada empleado adicional tiene un costo de sub-nivel de <strong>+$5 USD/mes</strong>.</p>
+      <input type="text" id="new-emp-user" placeholder="Nombre de usuario / Identificador (Ej: cajero_carlos)">
+      <input type="password" id="new-emp-pass" placeholder="Clave de acceso de empleado">
+      <button class="btn-success" style="width: auto; margin-top: 5px;" onclick="registrarNuevoEmpleadoAdmin()">➕ Crear Cuenta de Empleado</button>
+    </div>
+    <table>
+      <thead><tr><th>Usuario de Empleado</th><th>Estado</th><th>Acción</th></tr></thead>
+      <tbody id="tabla-empleados-admin-list"></tbody>
+    </table>
+  </div>
+
   <!-- AUDITORÍA -->
   <div id="subpage-audit" class="hidden">
     <h3>📊 Auditoría Unificada de Negocios y Gráficos de Ventas</h3>
@@ -132,15 +147,23 @@
       <input type="text" id="new-account-biz" placeholder="Ej: Negocio Híbrido GAMS">
       
       <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px dashed #007bff;">
-        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">🧩 Selecciona los Módulos Activos:</label>
+        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">🧩 Selecciona los Módulos Activos (Combos Automáticos):</label>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 14px;">
-          <label><input type="checkbox" id="mod-chk-comercio" value="Inventario / Comercio"> 📦 Comercio ($15)</label>
-          <label><input type="checkbox" id="mod-chk-hotel" value="Hotelería"> 🏨 Hotelería ($25)</label>
-          <label><input type="checkbox" id="mod-chk-citas" value="Citas y Agendas"> 📅 Citas ($25)</label>
+          <label><input type="checkbox" id="mod-chk-comercio" value="Inventario / Comercio" onchange="calcularPrecioNuevoNegocio()"> 📦 Comercio ($20)</label>
+          <label><input type="checkbox" id="mod-chk-hotel" value="Hotelería" onchange="calcularPrecioNuevoNegocio()"> 🏨 Hotelería ($35)</label>
+          <label><input type="checkbox" id="mod-chk-citas" value="Citas y Agendas" onchange="calcularPrecioNuevoNegocio()"> 📅 Citas ($30)</label>
         </div>
+        <p style="margin: 8px 0 0 0; font-size: 12px; color: #28a745; font-weight: bold;" id="lbl-precio-estimado">💡 Precio estimado con Combos: $0 USD</p>
       </div>
 
-      <!-- SELECTOR DE REFERIDO VINCULADO -->
+      <div style="margin: 10px 0;">
+        <label style="font-weight: bold; font-size: 13px; color: #555;">💳 Modalidad de Pago de Reservas:</label>
+        <select id="new-account-pay-mode" style="font-weight: bold; color: #0056b3; margin-top: 4px;">
+          <option value="LOCAL">💵 Presencial (Pago al llegar al local)</option>
+          <option value="ONLINE">💳 En Línea / Seña Obligatoria</option>
+        </select>
+      </div>
+
       <div style="margin: 10px 0;">
         <label style="font-weight: bold; font-size: 13px; color: #555;">🤝 Asignar Promotor / Referido (Opcional):</label>
         <select id="new-account-ref-select" style="font-weight: bold; color: #0056b3; margin-top: 4px;">
@@ -150,7 +173,7 @@
 
       <div class="grid" style="gap:10px; margin-top:5px;">
         <input type="text" id="new-account-pass-admin" placeholder="🔑 Clave Admin (Jefe)">
-        <input type="text" id="new-account-pass-emp" placeholder="🔑 Clave Empleado">
+        <input type="text" id="new-account-pass-emp" placeholder="🔑 Clave Empleado Principal">
       </div>
       <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio Híbrido</button>
     </div>
@@ -173,22 +196,15 @@
       <input type="text" id="prod-barcode" placeholder="Código / SKU / ID">
       <input type="text" id="prod-name" placeholder="Nombre / Descripción">
       
-      <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0; text-align: center;">
-        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">📸 Imagen del Registro:</label>
-        <div class="grid" style="gap: 5px; margin-bottom: 8px;">
-          <button type="button" class="btn-success" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-file').click()">📁 Subir Archivo</button>
-          <button type="button" class="btn-warning" style="padding: 8px; font-size: 13px;" onclick="document.getElementById('prod-img-camera').click()">📷 Tomar Foto</button>
-        </div>
-        <input type="file" id="prod-img-file" accept="image/*" style="display:none;" onchange="procesarImagenSeleccionada(event)">
-        <input type="file" id="prod-img-camera" accept="image/*" capture="environment" style="display:none;" onchange="procesarImagenSeleccionada(event)">
-        <input type="text" id="prod-img" placeholder="O ingresa URL de imagen..." onchange="actualizarPreviaUrl(this.value)">
-        <div id="img-preview-box" style="margin-top: 8px; display: none;">
+      <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0;">
+        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">📸 URL de Imagen del Registro:</label>
+        <input type="text" id="prod-img" placeholder="Ingresa URL de imagen (Ej: https://...)" onchange="actualizarPreviaUrl(this.value)">
+        <div id="img-preview-box" style="margin-top: 8px; display: none; text-align: center;">
           <img id="img-preview-tag" src="" style="width: 90px; height: 90px; object-fit: cover; border-radius: 8px; border: 2px solid #28a745; margin-top: 4px;">
           <br><button type="button" style="background:#dc3545; color:white; border:none; padding:3px 10px; border-radius:4px; font-size:11px; margin-top:4px;" onclick="limpiarImagenCargada()">❌ Quitar Foto</button>
         </div>
       </div>
 
-      <!-- CAMPOS HOTEL -->
       <div id="hotel-dynamic-form">
         <div class="grid" style="gap: 5px;">
           <input type="number" id="room-camas" placeholder="Camas" value="1">
@@ -206,7 +222,6 @@
         <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
       </div>
 
-      <!-- CAMPOS COMERCIO -->
       <div id="comercio-dynamic-form" class="hidden">
         <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
         <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">

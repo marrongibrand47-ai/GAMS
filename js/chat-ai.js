@@ -12,7 +12,6 @@ window.renderChatAI = function() {
         <div class="gams-ai-msg assistant" id="gams-saludo-inicial">¡Hola! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?</div>
       </div>
       
-      <!-- BOTONES DE ACCESO RÁPIDO -->
       <div style="padding: 6px 10px; background: #e9ecef; display: flex; gap: 4px; flex-wrap: wrap; border-top: 1px solid #ced4da;">
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Ver Precios')">💵 Precios</button>
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #28a745;" onclick="preguntaRapida('Cómo obtener cuenta')">🔑 Obtener Cuenta</button>
@@ -50,7 +49,7 @@ function actualizarSaludoSegunRol() {
     tratamiento = "Gibrand";
   } else if (rol === "ADMIN") {
     tratamiento = "Jefe";
-  } else if (rol === "EMPLEADO") {
+  } else if (rol === "EMPLEADO" || rol === "EMPLEADO_EXTRA") {
     tratamiento = "Empleado";
   }
   
@@ -67,21 +66,21 @@ window.mostrarMensajeBienvenidaReferido = function(refCode) {
 👋 ¡Hola! Te doy la bienvenida a <strong>GAMS Company</strong> (Código de Referido: <code>${refCode}</code>). Soy <strong>Michael</strong>, tu asistente virtual inteligente.
 
 🎁 <strong>¡Primer mes de prueba totalmente gratis!</strong>
-Al crear tu cuenta con nosotros, no pagas por la creación inicial: obtienes acceso completo de prueba gratis durante el primer mes. El pago real se realiza únicamente a partir de la extensión o renovación de la licencia al finalizar dicho periodo.
+Al crear tu cuenta con nosotros, obtienes acceso completo de prueba gratis durante el primer mes. El pago real se realiza únicamente al finalizar dicho periodo.
 
-💵 <strong>Precios Oficiales de Licencia por Módulo:</strong>
-• 📦 Módulo de Inventario / Comercio: <strong>$15 USD</strong>
-• 🏨 Módulo de Hotelería: <strong>$25 USD</strong>
-• 📅 Módulo de Citas y Agendas: <strong>$25 USD</strong>
-*(Si combinas varios módulos, se suman de forma modular).*
+💵 <strong>Precios Oficiales & Combos Escalables:</strong>
+• 📦 Módulo de Inventario / Comercio: <strong>$20 USD/mes</strong>
+• 🏨 Módulo de Hotelería: <strong>$35 USD/mes</strong>
+• 📅 Módulo de Citas y Agendas (con QR y Portal de Clientes): <strong>$30 USD/mes</strong>
+• 👥 Cuenta de Empleado Extra (Sub-nivel): <strong>+$5 USD/mes</strong>
+• 🌟 <strong>Combo Comercio + Citas:</strong> $40 USD/mes
+• 👑 <strong>Plan VIP Total (Todos los Módulos):</strong> $65 USD/mes
 
 🔑 <strong>¿Cómo obtener tu cuenta?</strong>
-Debes **contactar directamente con nuestro servicio técnico**. Al crear tu cuenta te entregamos dos claves:
-1. 👑 **Clave de Administrador (Jefe):** Control gerencial total, finanzas y tasas.
-2. 👨‍💻 **Clave de Empleado:** Operativa (POS, ventas y citas).
+Debes **contactar directamente con nuestro servicio técnico**. Al crear tu cuenta te entregamos tus claves de acceso.
 
 📞 <strong>Soporte Técnico y Activación Directa:</strong>
-Escríbenos ahora mismo por WhatsApp o Instagram para generarte tus claves:
+Escríbenos ahora mismo por WhatsApp o Instagram:
 • 👤 <strong>Dueño y Soporte:</strong> Gibrand Marron
 • 📱 <strong>WhatsApp:</strong> <a href="https://wa.me/584242015806" target="_blank" style="color:#007bff; font-weight:bold;">+58 4242015806</a>
 • 📸 <strong>Instagram:</strong> <a href="https://instagram.com/gibrand_x" target="_blank" style="color:#007bff; font-weight:bold;">@gibrand_x</a>
@@ -108,13 +107,13 @@ window.enviarPreguntaGamsAI = async function() {
   if (txt.includes("cuenta") || txt.includes("obtener") || txt.includes("registrar") || txt.includes("comprar")) {
     respuestaPredeterminada = `
 🔑 <strong>¿Cómo obtener una cuenta en GAMS?</strong>
-Para obtener tu cuenta y tus dos claves (Jefe y Empleado), **debes contactar obligatoriamente con nuestro servicio técnico**. El primer mes de prueba es gratis.
+Para obtener tu cuenta y tus claves de acceso, **contacta a nuestro servicio técnico**. El primer mes de prueba es gratis.
 Contáctanos:
 • 📱 WhatsApp: <a href="https://wa.me/584242015806" target="_blank">+58 4242015806</a>
 • 📸 Instagram: <a href="https://instagram.com/gibrand_x" target="_blank">@gibrand_x</a>
     `;
-  } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete")) {
-    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Primer mes gratis. Renovaciones: Inventario ($15), Hotelería ($25), Citas ($25).`;
+  } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete") || txt.includes("combo")) {
+    respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Primer mes gratis. Comercio ($20), Hotelería ($35), Citas ($30 con Portal QR). Empleado extra (+$5). Combo Comercio+Citas ($40) y Plan VIP Total ($65).`;
   } else if (txt.includes("soporte") || txt.includes("telefono") || txt.includes("contacto") || txt.includes("instagram")) {
     respuestaPredeterminada = `
 📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong>

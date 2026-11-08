@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GAMS - Portal de Reservas de Clientes</title>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+  body { background: #f0f2f5; font-family: 'Times New Roman', Times, serif; padding: 20px; }
+  .reserva-card { max-width: 600px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  h2 { color: #0056b3; margin-top: 0; text-align: center; }
+  .slot-chip { display: inline-block; padding: 8px 12px; margin: 5px; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+  .slot-libre { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+  .slot-ocupado { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; cursor: not-allowed; opacity: 0.6; }
+</style>
+</head>
+<body>
+
+<div class="reserva-card">
+  <h2 id="pub-biz-title">📅 Portal de Reservas GAMS</h2>
+  <p style="text-align: center; color: #666; font-size: 14px;">Selecciona tu profesional, fecha y hora disponible para agendar tu cita.</p>
+
+  <div style="margin-bottom: 15px;">
+    <label><strong>Profesional / Especialista:</strong></label>
+    <select id="pub-select-personal" onchange="cargarHorariosPublicos()" style="font-weight: bold; color: #0056b3;"></select>
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <label><strong>Fecha de Cita:</strong></label>
+    <input type="date" id="pub-fecha" onchange="cargarHorariosPublicos()" style="font-weight: bold;">
+  </div>
+
+  <div style="background: #e2f0d9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #385723;">
+    <h4 style="margin-top:0; color:#385723;">⏰ Horarios Disponibles</h4>
+    <div id="pub-slots-container">Cargando disponibilidad...</div>
+  </div>
+
+  <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
+    <h4 style="margin-top:0; color:#0056b3;">📝 Tus Datos para la Reserva</h4>
+    <input type="text" id="pub-cliente-nombre" placeholder="Nombre y Apellido">
+    <input type="text" id="pub-cliente-tel" placeholder="Número de Teléfono / WhatsApp">
+    <input type="hidden" id="pub-hora-seleccionada">
+    <p style="font-size: 13px; color: #333; margin: 8px 0;"><strong>Hora seleccionada:</strong> <span id="lbl-hora-elegida" style="color: #007bff; font-weight: bold;">Ninguna (Haz clic en un horario verde arriba)</span></p>
+    <button class="btn-success" style="margin-top: 10px;" onclick="confirmarReservaPublica()">📅 Confirmar Mi Reserva</button>
+  </div>
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDRavKFUBrMVE5YZUXTuieTuOkUWz4JWyo",
+  authDomain: "gams-hoteleria.firebaseapp.com",
+  projectId: "gams-hoteleria",
+  storageBucket: "gams-hoteleria.firebasestorage.app",
+  messagingSenderId: "503951137385",
+  appId: "1:503951137385:web:4a3e12968af81c9078a0f8",
+  measurementId: "G-DSKQ9LWB2Y"
+};
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const dbPub = firebase.firestore();
+
+const urlParams = new URLSearchParams(window.location.search);
+const bizKey = urlParams.get('biz');
+
+window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById("pub-fecha").value = new Date().toISOString().split('T')[0];
+  if (!bizKey) {
+    alert("❌ Error: Enlace de reserva inválido o incompleto.");
+    return;
+  }
+  await cargarDatosNegocioPublico();
+});
+
+async function cargarDatosNegocioPublico() {
+  try {
+    let doc = await dbPub.collection("gams_system").doc("registry").get();
+    if (doc.exists) {
+      let negocios = doc.data().negocios || [];
+      let neg = negocios.find(n => n.adminKey === bizKey);
+      if (neg) {
+        document.getElementById("pub-biz-title").innerText = `📅 Reservas - ${neg.bizName}`;
+      }
+    }
+  } catch(e) { console.warn(e); }
+
+  let agendasData = localStorage.getItem(`gams_agendas_${bizKey}`);
+  let agendas = agendasData ? JSON.parse(agendasData) : [{ id: "p1", nombre: "Carlos (General)", especialidad: "Servicio", hEntrada: "08:00", hSalida: "18:00" }];
+  
+  const sel = document.getElementById("pub-select-personal");
+  sel.innerHTML = "";
+  agendas.forEach(a => {
+    sel.innerHTML += `<option value="${a.id}">${a.nombre} (${a.especialidad})</option>`;
+  });
+  cargarHorariosPublicos();
+}
+
+async function cargarHorariosPublicos() {
+  const personalId = document.getElementById("pub-select-personal").value;
+  const fecha = document.getElementById("pub-fecha").value;
+  const container = document.getElementById("pub-slots-container");
+  
+  let agendasData = localStorage.getItem(`gams_agendas_${bizKey}`);
+  let agendas = agendasData ? JSON.parse(agendasData) : [];
+  let prof = agendas.find(a => a.id === personalId);
+  let hEntrada = prof ? prof.hEntrada || "08:00" : "08:00";
+  let hSalida = prof ? prof.hSalida || "18:00" : "18:00";
+
+  let citasData = localStorage.getItem(`gams_citas_${bizKey}`);
+  let citas = citasData ? JSON.parse(citasData) : [];
+  let filtradas = citas.filter(c => c.personalId === personalId && c.fecha === fecha);
+  let horasOcupadas = filtradas.map(c => c.hora);
+
+  let inicioMin = convertirHoraAMinutosPub(hEntrada);
+  let finMin = convertirHoraAMinutosPub(hSalida);
+  let html = "";
+
+  for (let m = inicioMin; m < finMin; m += 30) {
+    let horaStr = convertirMinutosAHorasPub(m);
+    let ocupado = horasOcupadas.includes(horaStr);
+    if (ocupado) {
+      html += `<span class="slot-chip slot-ocupado">${horaStr} ❌</span>`;
+    } else {
+      html += `<span class="slot-chip slot-libre" onclick="seleccionarHoraPub('${horaStr}')">${horaStr} ✅</span>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+function seleccionarHoraPub(hora) {
+  document.getElementById("pub-hora-seleccionada").value = hora;
+  document.getElementById("lbl-hora-elegida").innerText = hora;
+}
+
+function convertirHoraAMinutosPub(str) {
+  let p = str.split(":");
+  return parseInt(p[0]) * 60 + parseInt(p[1]);
+}
+function convertirMinutosAHorasPub(min) {
+  let h = Math.floor(min / 60).toString().padStart(2, '0');
+  let m = (min % 60).toString().padStart(2, '0');
+  return `${h}:${m}`;
+}
+
+async function confirmarReservaPublica() {
+  const personalId = document.getElementById("pub-select-personal").value;
+  const fecha = document.getElementById("pub-fecha").value;
+  const cliente = document.getElementById("pub-cliente-nombre").value.trim();
+  const tel = document.getElementById("pub-cliente-tel").value.trim();
+  const hora = document.getElementById("pub-hora-seleccionada").value;
+
+  if (!cliente || !tel || !hora) return alert("Por favor completa tus datos y selecciona un horario verde.");
+
+  let citasData = localStorage.getItem(`gams_citas_${bizKey}`);
+  let citas = citasData ? JSON.parse(citasData) : [];
+  
+  let solapada = citas.some(c => c.personalId === personalId && c.fecha === fecha && c.hora === hora);
+  if (solapada) return alert("⚠️ Lo sentimos, este horario acaba de ser ocupado por otro cliente. Selecciona otro.");
+
+  citas.push({ id: Date.now(), personalId, fecha, cliente, tel, hora, duracion: 30 });
+  localStorage.setItem(`gams_citas_${bizKey}`, JSON.stringify(citas));
+
+  alert(`🎉 ¡Reserva confirmada con éxito para las ${hora}! Te esperamos.`);
+  document.getElementById("pub-cliente-nombre").value = "";
+  document.getElementById("pub-cliente-tel").value = "";
+  document.getElementById("pub-hora-seleccionada").value = "";
+  document.getElementById("lbl-hora-elegida").innerText = "Ninguna";
+  cargarHorariosPublicos();
+}
+</script>
+</body>
+</html>

@@ -4,7 +4,6 @@ window.renderModuloComercio = function() {
   const container = document.getElementById("modulo-comercio-container");
   if (!container) return;
   container.innerHTML = `
-    <!-- INVENTARIO Y LIBRO DIARIO -->
     <div id="subpage-comercio-inv">
       <h3>📦 Inventario Central</h3>
       <div style="overflow-x: auto;">
@@ -25,7 +24,6 @@ window.renderModuloComercio = function() {
       </div>
     </div>
 
-    <!-- POS Y CARRITO -->
     <div id="subpage-comercio-pos" class="hidden">
       <h3>🛒 POS & Carrito de Compras</h3>
       <div style="background:#fff; border: 2px solid #28a745; border-radius: 8px; padding:15px;">
@@ -46,7 +44,6 @@ window.renderModuloComercio = function() {
       </div>
     </div>
 
-    <!-- CUENTAS POR COBRAR -->
     <div id="subpage-comercio-cxc" class="hidden">
       <h3>💳 Cuentas por Cobrar (CxC)</h3>
       <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
@@ -60,13 +57,11 @@ window.renderModuloComercio = function() {
       </table>
     </div>
 
-    <!-- GALERÍA -->
     <div id="subpage-comercio-album" class="hidden">
       <h3>📸 Galería de Productos</h3>
       <div id="album-comercio-container" class="album-grid"></div>
     </div>
 
-    <!-- ALERTAS STOCK -->
     <div id="subpage-comercio-low" class="hidden">
       <h3>⚠️ Alertas de Stock Bajo</h3>
       <table>
@@ -184,19 +179,27 @@ function renderizarCarrito() {
 window.procesarCompraCarrito = async function() {
   if (cartItems.length === 0) return alert("El carrito está vacío.");
   let curr = await getDbItems(currentAccountKey);
+  
+  for (let item of cartItems) {
+    let prod = curr[item.originalIndex];
+    if (!prod || prod.stock < item.qty) {
+      return alert(`❌ Stock insuficiente para el producto: "${item.name}". Stock actual disponible: ${prod ? prod.stock : 0}.`);
+    }
+  }
+
   let total = 0;
   for (let item of cartItems) {
     let prod = curr[item.originalIndex];
-    if (prod && prod.stock >= item.qty) {
-      prod.stock -= item.qty;
-      total += item.price * item.qty;
-    }
+    prod.stock -= item.qty;
+    total += item.price * item.qty;
   }
+
   await saveDbItems(currentAccountKey, curr);
-  await registrarTransaccionDiaria(currentAccountKey, "VENTA POS", `Venta de ${cartItems.length} ítems`, total);
-  alert("✅ Venta procesada.");
+  await registrarTransaccionDiaria(currentAccountKey, "VENTA POS", `Venta de ${cartItems.length} ítems en caja`, total);
+  alert(`✅ Venta procesada con éxito. Total cobrado: $${total.toFixed(2)} USD. Inventario actualizado automáticamente.`);
   cartItems = [];
   renderizarCarrito();
+  window.updateTblComercio();
 }
 
 async function renderAlbumComercio() {
