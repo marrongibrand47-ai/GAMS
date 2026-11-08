@@ -38,8 +38,8 @@ function calcularFechaLicenciaUnMesDia4() {
 }
 
 const defaultNegocios = [
-  { id: "hotel_costa_real", bizName: "Hotel Costa Real", type: "Hotelería", dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() },
-  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", type: "Inventario / Comercio", dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4() }
+  { id: "hotel_costa_real", bizName: "Hotel Costa Real", modules: ["Hotelería"], precioLicencia: 25, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" },
+  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", modules: ["Inventario / Comercio"], precioLicencia: 15, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" }
 ];
 
 function obtenerIdentificadorRaizNegocio(key) {
@@ -50,7 +50,7 @@ function obtenerIdentificadorRaizNegocio(key) {
 async function getDbForBusiness(accountKey) {
   let neg = negociosRegistry.find(n => n.adminKey === accountKey || n.empKey === accountKey);
   if (neg && neg.dbTarget === "VIEJA") return dbOld;
-  return (activeModule === "HOTEL") ? dbHotel : (neg && neg.type === "Inventario / Comercio" ? dbOld : dbHotel);
+  return (activeModule === "HOTEL") ? dbHotel : (neg && neg.modules && neg.modules.includes("Inventario / Comercio") ? dbOld : dbHotel);
 }
 
 async function getDbItems(key) {
@@ -139,7 +139,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   poblarSelectoresSupervisores();
   poblarSelectAnalyticsBiz();
 
-  // Detectar enlace de referido y abrir chat directamente
   const urlParams = new URLSearchParams(window.location.search);
   const refCode = urlParams.get('ref');
 
@@ -178,7 +177,7 @@ function poblarSelectoresSupervisores(filtro = "") {
   select.innerHTML = "";
   let filtrados = negociosRegistry.filter(n => n.bizName.toLowerCase().includes(filtro.toLowerCase()));
   filtrados.forEach(n => {
-    select.innerHTML += `<option value="${n.adminKey}">${n.type === "Hotelería" ? "🏨" : "📦"} ${n.bizName}</option>`;
+    select.innerHTML += `<option value="${n.adminKey}">🏢 ${n.bizName}</option>`;
   });
 }
 
@@ -187,7 +186,7 @@ function poblarSelectAnalyticsBiz() {
   if (!sel) return;
   sel.innerHTML = "";
   negociosRegistry.forEach(n => {
-    sel.innerHTML += `<option value="${n.adminKey}">${n.type === "Hotelería" ? "🏨" : "📦"} ${n.bizName}</option>`;
+    sel.innerHTML += `<option value="${n.adminKey}">🏢 ${n.bizName}</option>`;
   });
 }
 
@@ -276,15 +275,36 @@ window.validateAuth = function() {
   }
 
   if (foundNeg) {
+    let listMods = foundNeg.modules || ["Inventario / Comercio"];
     let modAsignado = "COMERCIO";
-    if (foundNeg.type === "Hotelería") modAsignado = "HOTEL";
-    else if (foundNeg.type === "Citas y Agendas") modAsignado = "CITAS";
+    if (listMods.includes("Hotelería")) modAsignado = "HOTEL";
+    else if (listMods.includes("Citas y Agendas")) modAsignado = "CITAS";
+    else if (listMods.includes("Inventario / Comercio")) modAsignado = "COMERCIO";
+
+    // Si es el primer inicio de sesión de este negocio por referido, sumar al promotor automáticamente una sola vez
+    if (foundNeg.refCode && !localStorage.getItem(`counted_ref_${foundNeg.id}`)) {
+      localStorage.setItem(`counted_ref_${foundNeg.id}`, "true");
+      registrarPuntoReferidoAutomatico(foundNeg.refCode, foundNeg.precioLicencia || 15);
+    }
 
     saveAndReload(matchedRole, modAsignado, currentAccountKey);
     return;
   }
   document.getElementById("error-msg").innerText = "❌ Clave incorrecta.";
   document.getElementById("error-msg").style.display = "block";
+}
+
+function registrarPuntoReferidoAutomatico(codigoRef, precio) {
+  let data = localStorage.getItem("gams_promotores_referidos");
+  let promotores = data ? JSON.parse(data) : [];
+  let promotor = promotores.find(p => p.codigo === codigoRef);
+
+  if (promotor) {
+    promotor.traidos = (promotor.traidos || 0) + 1;
+    promotor.ventas = (promotor.ventas || 0) + precio;
+    promotor.comision = promotor.ventas * 0.50; // 50% de comisión
+    localStorage.setItem("gams_promotores_referidos", JSON.stringify(promotores));
+  }
 }
 
 function saveAndReload(role, mod, acc) {
@@ -504,14 +524,15 @@ function mostrarGestionCuentas() {
 
   negociosRegistry.forEach((neg, idx) => {
     let isSuspended = neg.status === "SUSPENDIDO";
+    let listaModulos = (neg.modules || ["Comercio"]).join(", ");
+    let precio = neg.precioLicencia || 15;
     tbody.innerHTML += `
       <tr>
-        <td><strong>${neg.bizName}</strong></td>
+        <td><strong>${neg.bizName}</strong><br><small>Ref: ${neg.refCode || 'Ninguno'}</small></td>
         <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
-        <td>${neg.type}</td>
-        <td>Standard</td>
+        <td>${listaModulos}</td>
+        <td><strong>$${precio} USD</strong></td>
         <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
-        <td>${neg.expiry || '2030-12-04'}</td>
         <td>
           <button class="${isSuspended ? 'btn-success' : 'btn-warning'}" style="padding: 6px; font-size: 11px;" onclick="toggleEstadoNegocio(${idx})">${isSuspended ? 'Reactivar' : 'Suspender'}</button>
           <button class="btn-danger" style="padding: 6px; font-size: 11px;" onclick="eliminarNegocio(${idx})">Eliminar</button>
@@ -522,20 +543,49 @@ function mostrarGestionCuentas() {
 
 window.registrarNuevaCuentaUnificada = async function() {
   const bizName = document.getElementById("new-account-biz").value.trim();
-  const type = document.getElementById("new-account-type").value;
   const adminPass = document.getElementById("new-account-pass-admin").value.trim();
   const empPass = document.getElementById("new-account-pass-emp").value.trim();
-  if (!bizName || !adminPass || !empPass) return alert("Completa todos los campos.");
+  
+  let modulosSeleccionados = [];
+  if (document.getElementById("mod-chk-comercio").checked) modulosSeleccionados.push("Inventario / Comercio");
+  if (document.getElementById("mod-chk-hotel").checked) modulosSeleccionados.push("Hotelería");
+  if (document.getElementById("mod-chk-citas").checked) modulosSeleccionados.push("Citas y Agendas");
+
+  if (!bizName || !adminPass || !empPass || modulosSeleccionados.length === 0) {
+    return alert("Completa todos los campos y selecciona al menos un módulo.");
+  }
+
+  let precioTotal = 0;
+  modulosSeleccionados.forEach(m => {
+    if (m === "Inventario / Comercio") precioTotal += 15;
+    if (m === "Hotelería") precioTotal += 25;
+    if (m === "Citas y Agendas") precioTotal += 25;
+  });
 
   let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);
   let adminKey = "biz_" + id + "_admin";
   let empKey = "biz_" + id + "_emp";
   let expiryStr = calcularFechaLicenciaUnMesDia4();
+  let refAsociado = localStorage.getItem("gams_ref_active") || "";
 
-  negociosRegistry.push({ id, bizName, type, dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
+  negociosRegistry.push({ 
+    id, 
+    bizName, 
+    modules: modulosSeleccionados, 
+    precioLicencia: precioTotal,
+    dbTarget: "NUEVA", 
+    adminKey, 
+    adminPass, 
+    empKey, 
+    empPass, 
+    status: "ACTIVO", 
+    expiry: expiryStr,
+    refCode: refAsociado 
+  });
+
   await saveNegociosRegistry(negociosRegistry);
   mostrarGestionCuentas();
-  alert(`🎉 Negocio "${bizName}" registrado con éxito.`);
+  alert(`🎉 Negocio multimodular "${bizName}" registrado con éxito. Precio licencia: $${precioTotal} USD.`);
 }
 
 window.toggleEstadoNegocio = async function(idx) {

@@ -132,29 +132,32 @@
     <div id="analytics-content-container"></div>
   </div>
 
-  <!-- GESTIÓN DE CUENTAS -->
+  <!-- GESTIÓN DE CUENTAS MULTIMODULAR -->
   <div id="subpage-accounts" class="hidden">
     <h3>⚙️ Gestión y Control de Cuentas</h3>
     <div style="background: #ffffff; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-      <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio</h4>
-      <div class="grid" style="gap:10px;">
-        <input type="text" id="new-account-biz" placeholder="Ej: Barbería GAMS o Hotel Sol">
-        <select id="new-account-type">
-          <option value="Inventario / Comercio">📦 Inventario / Comercio</option>
-          <option value="Hotelería">🏨 Hotelería</option>
-          <option value="Citas y Agendas">📅 Citas y Agendas Multi-Personal</option>
-        </select>
+      <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio Multimodular</h4>
+      <input type="text" id="new-account-biz" placeholder="Ej: Negocio Híbrido GAMS">
+      
+      <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px dashed #007bff;">
+        <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">🧩 Selecciona los Módulos Activos:</label>
+        <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 14px;">
+          <label><input type="checkbox" id="mod-chk-comercio" value="Inventario / Comercio"> 📦 Comercio ($15)</label>
+          <label><input type="checkbox" id="mod-chk-hotel" value="Hotelería"> 🏨 Hotelería ($25)</label>
+          <label><input type="checkbox" id="mod-chk-citas" value="Citas y Agendas"> 📅 Citas ($25)</label>
+        </div>
       </div>
+
       <div class="grid" style="gap:10px; margin-top:5px;">
         <input type="text" id="new-account-pass-admin" placeholder="🔑 Clave Admin (Jefe)">
         <input type="text" id="new-account-pass-emp" placeholder="🔑 Clave Empleado">
       </div>
-      <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio</button>
+      <button class="btn-success" style="margin-top: 10px;" onclick="registrarNuevaCuentaUnificada()">💾 Registrar Negocio Híbrido</button>
     </div>
     <div style="overflow-x: auto;">
       <table>
         <thead>
-          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Tipo</th><th>Base</th><th>Licencia</th><th>Vencimiento</th><th>Acciones</th></tr>
+          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Módulos Activos</th><th>Precio Licencia</th><th>Estado</th><th>Acciones</th></tr>
         </thead>
         <tbody id="accounts-control-table"></tbody>
       </table>

@@ -20,7 +20,7 @@ th { background-color: #343a40; color: white; }
   body { padding: 20px; }
   .card { padding: 20px; margin-bottom: 20px; }
 }
-.error { color: #721c24; background-color: #f8f9da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
+.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
 .badge { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 .badge-biz { background: #212529; color: #ffc107; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 13px; border: 1px solid #ffc107; }
 .sync-status { font-size: 12px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
@@ -38,7 +38,6 @@ th { background-color: #343a40; color: white; }
 .nav-tabs button { flex: 1; background-color: #6c757d; font-size: 13px; padding: 10px; color: white; border-radius: 4px; border: none; }
 .nav-tabs button.active { background-color: #212529 !important; font-weight: bold; border-bottom: 3px solid #007bff; color: #ffffff !important; }
 
-/* COLORES DISTINTIVOS PARA CADA PESTAÑA DEL SUPERVISOR */
 .main-system-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
 .main-system-tabs button { flex: 1; min-width: 130px; font-size: 13px; padding: 12px; border-radius: 6px; color: white; border: none; font-weight: bold; opacity: 0.8; transition: opacity 0.2s, transform 0.2s; }
 .main-system-tabs button:hover { opacity: 1; transform: translateY(-2px); }

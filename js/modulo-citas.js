@@ -8,7 +8,6 @@ window.renderModuloCitas = function() {
     <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ced4da;">
       <h3>📅 Módulo de Citas y Agendas Multi-Personal</h3>
       
-      <!-- SECCIÓN DE CREAR AGENDA (BLOQUEADA PARA EMPLEADOS) -->
       <div id="panel-crear-agenda" style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px;" class="${esEmpleado ? 'hidden' : ''}">
         <h4 style="margin-top: 0; color: #6f42c1;">➕ Crear Nueva Agenda / Profesional</h4>
         <input type="text" id="agenda-nombre-personal" placeholder="Nombre del Profesional (Ej: Carlos)">
@@ -25,7 +24,6 @@ window.renderModuloCitas = function() {
         <div><label><strong>Fecha de Cita:</strong></label><input type="date" id="cita-fecha" onchange="cargarHorariosDisponibles()"></div>
       </div>
 
-      <!-- SECCIÓN DE HORAS LIBRES Y OCUPADAS -->
       <div style="background: #e2f0d9; padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 5px solid #385723;">
         <h4 style="margin-top:0; color:#385723;">⏰ Control de Horarios y Disponibilidad</h4>
         <div id="resumen-horarios-profesional" style="font-size: 14px;">Selecciona un profesional para ver su jornada.</div>
