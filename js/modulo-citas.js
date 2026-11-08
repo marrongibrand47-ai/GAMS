@@ -11,23 +11,18 @@ window.renderModuloCitas = function() {
     <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #ced4da;">
       <h3>📅 Módulo de Citas y Agendas Multi-Personal</h3>
       
-      <!-- PORTAL QR Y LINK PARA EL ADMINISTRADOR -->
       <div class="${esEmpleado ? 'hidden' : ''}" style="background: #eef5fc; padding: 15px; border-radius: 8px; border: 1px solid #007bff; margin-bottom: 20px;">
         <h4 style="margin-top:0; color:#0056b3;">🔗 Portal Web & Código QR para Clientes</h4>
-        <p style="font-size:13px; color:#555; margin-bottom:8px;">Comparte este enlace o imprime el Código QR para que tus clientes agenden solos 24/7 sin pedir tus claves del sistema.</p>
-        
         <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
           <input type="text" id="input-link-publico-reserva" value="${urlPublicaReserva}" readonly style="background: white; font-weight: bold; color: #333; margin:0; flex:1;">
           <button class="btn-success" style="width: auto; margin:0;" onclick="copiarLinkPublicoReservas()">📋 Copiar Link</button>
         </div>
-
         <div style="text-align: center; background: white; padding: 12px; border-radius: 6px; border: 1px dashed #007bff;">
-          <img src="${qrApiUrl}" alt="Código QR de Reserva" style="width: 150px; height: 150px; border-radius: 4px; display:block; margin:auto;">
-          <button class="btn-warning" style="width: auto; padding: 6px 15px; margin-top: 8px; font-size:12px;" onclick="descargarQRCreado('${raizNegocio}')">📥 Descargar QR para Imprimir (PNG)</button>
+          <img src="${qrApiUrl}" alt="Código QR" style="width: 150px; height: 150px; display:block; margin:auto;">
+          <button class="btn-warning" style="width: auto; padding: 6px 15px; margin-top: 8px; font-size:12px;" onclick="descargarQRCreado('${raizNegocio}')">📥 Descargar QR (PNG)</button>
         </div>
       </div>
 
-      <!-- PANEL CREAR PROFESIONAL (SOLO ADMIN) -->
       <div id="panel-crear-agenda" style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px;" class="${esEmpleado ? 'hidden' : ''}">
         <h4 style="margin-top: 0; color: #6f42c1;">➕ Crear Nueva Agenda / Profesional</h4>
         <input type="text" id="agenda-nombre-personal" placeholder="Nombre del Profesional (Ej: Carlos)">
@@ -55,7 +50,7 @@ window.renderModuloCitas = function() {
         <input type="text" id="cita-cliente-tel" placeholder="Teléfono / WhatsApp">
         <div class="grid" style="gap: 5px;">
           <div><label><small>Hora de Cita:</small></label><input type="time" id="cita-hora-inicio"></div>
-          <div><label><small>Duración (Opcional - min):</small></label><input type="number" id="cita-duracion" placeholder="Ej: 30" value="30"></div>
+          <div><label><small>Duración (min):</small></label><input type="number" id="cita-duracion" placeholder="30" value="30"></div>
         </div>
         <button class="btn-success" style="margin-top: 10px;" onclick="agendarNuevaCita()">📅 Confirmar Cita</button>
       </div>
@@ -74,10 +69,7 @@ window.renderModuloCitas = function() {
 window.copiarLinkPublicoReservas = function() {
   const input = document.getElementById("input-link-publico-reserva");
   input.select();
-  input.setSelectionRange(0, 99999);
-  navigator.clipboard.writeText(input.value).then(() => {
-    alert("📋 ¡Enlace público copiado al portapapeles!");
-  });
+  navigator.clipboard.writeText(input.value).then(() => alert("📋 ¡Enlace copiado!"));
 }
 
 window.descargarQRCreado = function(raizNegocio) {
@@ -90,7 +82,7 @@ window.descargarQRCreado = function(raizNegocio) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  alert("📥 ¡Imagen QR de alta resolución descargada con éxito!");
+  alert("📥 ¡QR descargado con éxito!");
 }
 
 function getClaveRaizCitas() {
@@ -121,7 +113,7 @@ async function saveCitasRegistradas(list) {
 
 window.crearAgendaPersonal = async function() {
   let esEmpleado = (window.userRole || "").trim().toUpperCase() === "EMPLEADO" || (window.userRole || "").trim().toUpperCase() === "EMPLEADO_EXTRA";
-  if (esEmpleado) return alert("❌ Acceso restringido: Solo el Administrador (Jefe) puede crear agendas o personal.");
+  if (esEmpleado) return alert("❌ Acceso restringido: Solo el Administrador puede crear agendas.");
 
   const nombre = document.getElementById("agenda-nombre-personal").value.trim();
   const esp = document.getElementById("agenda-especialidad").value.trim();
@@ -133,7 +125,7 @@ window.crearAgendaPersonal = async function() {
   agendas.push({ id: "p_" + Date.now(), nombre, especialidad: esp, hEntrada, hSalida });
   await saveAgendasPersonal(agendas);
   window.cargarVistaCitas();
-  alert("✅ Profesional y jornada guardados y sincronizados.");
+  alert("✅ Profesional guardado.");
 }
 
 window.cargarVistaCitas = async function() {
@@ -170,7 +162,7 @@ window.cargarHorariosDisponibles = async function() {
     let ocupado = horasOcupadas.includes(horaStr);
     
     listaSlotsHTML += `
-      <span style="display: inline-block; padding: 6px 10px; margin: 4px; border-radius: 4px; font-size: 12px; font-weight: bold; background: ${ocupado ? '#f8d7da; color: #721c24; border: 1px solid #f5c6cb;' : '#d4edda; color: #155724; border: 1px solid #c3e6cb;'}" title="${ocupado ? 'Horario Ocupado' : 'Horario Disponible'}">
+      <span style="display: inline-block; padding: 6px 10px; margin: 4px; border-radius: 4px; font-size: 12px; font-weight: bold; background: ${ocupado ? '#f8d7da; color: #721c24; border: 1px solid #f5c6cb;' : '#d4edda; color: #155724; border: 1px solid #c3e6cb;'}">
         ${horaStr} ${ocupado ? '❌' : '✅'}
       </span>`;
   }
@@ -183,7 +175,7 @@ window.cargarHorariosDisponibles = async function() {
 
   tbody.innerHTML = "";
   if (filtradas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay citas agendadas para el ${fecha}. ¡Horario completamente libre!</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay citas agendadas para el ${fecha}.</td></tr>`;
     return;
   }
 
@@ -219,28 +211,24 @@ window.agendarNuevaCita = async function() {
   const hora = document.getElementById("cita-hora-inicio").value;
   const duracion = parseInt(document.getElementById("cita-duracion").value) || 30;
 
-  if (!cliente || !hora) return alert("Ingresa el nombre del cliente y la hora de la cita.");
+  if (!cliente || !hora) return alert("Ingresa el nombre del cliente y la hora.");
   
   let citas = await getCitasRegistradas();
   let solapada = citas.some(c => c.personalId === personalId && c.fecha === fecha && c.hora === hora);
   
-  if (solapada) {
-    return alert("⚠️ Este horario ya se encuentra ocupado. Selecciona otra hora disponible.");
-  }
+  if (solapada) return alert("⚠️ Este horario ya se encuentra ocupado.");
 
   citas.push({ id: Date.now(), personalId, fecha, cliente, tel, hora, duracion });
   await saveCitasRegistradas(citas);
   
-  await registrarTransaccionDiaria(currentAccountKey, "CITA RESERVADA", `Cita agendada para ${cliente} a las ${hora}`, 0);
+  await registrarTransaccionDiaria(currentAccountKey, "CITA RESERVADA", `Cita para ${cliente} a las ${hora}`, 0);
   
-  // Limpiar campos de cita manual
   document.getElementById("cita-cliente-nombre").value = "";
   document.getElementById("cita-cliente-tel").value = "";
   document.getElementById("cita-hora-inicio").value = "";
 
-  // Refrescar inmediatamente el panel de disponibilidad de horarios
   await window.cargarHorariosDisponibles();
-  alert("🎉 Cita agendada y reflejada en el control de horarios correctamente.");
+  alert("🎉 Cita agendada correctamente.");
 }
 
 window.cancelarCita = async function(id) {

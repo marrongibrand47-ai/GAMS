@@ -44,46 +44,11 @@ function actualizarSaludoSegunRol() {
   
   let rol = (window.userRole || "").trim().toUpperCase();
   let tratamiento = "Invitado / Emprendedor";
-  
-  if (rol === "SUPERVISOR") {
-    tratamiento = "Gibrand";
-  } else if (rol === "ADMIN") {
-    tratamiento = "Jefe";
-  } else if (rol === "EMPLEADO" || rol === "EMPLEADO_EXTRA") {
-    tratamiento = "Empleado";
-  }
-  
-  if (!rol) return;
+  if (rol === "SUPERVISOR") tratamiento = "Gibrand";
+  else if (rol === "ADMIN") tratamiento = "Jefe";
+  else if (rol === "EMPLEADO" || rol === "EMPLEADO_EXTRA") tratamiento = "Empleado";
   
   saludoBox.innerHTML = `¡Hola <strong>${tratamiento}</strong>! Soy Michael, tu asistente interactivo de <strong>GAMS</strong>. ¿En qué puedo ayudarte hoy?`;
-}
-
-window.mostrarMensajeBienvenidaReferido = function(refCode) {
-  const body = document.getElementById("gams-ai-chat-body");
-  if (!body) return;
-
-  const mensajeBienvenida = `
-👋 ¡Hola! Te doy la bienvenida a <strong>GAMS Company</strong> (Código de Referido: <code>${refCode}</code>). Soy <strong>Michael</strong>, tu asistente virtual inteligente.
-
-🎁 <strong>¡Primer mes de prueba totalmente gratis!</strong>
-Al crear tu cuenta con nosotros, obtienes acceso completo de prueba gratis durante el primer mes. El pago real se realiza únicamente al finalizar dicho periodo.
-
-💵 <strong>Precios Oficiales & Combos Escalables:</strong>
-• 📦 Módulo de Inventario / Comercio: <strong>$20 USD/mes</strong>
-• 🏨 Módulo de Hotelería: <strong>$35 USD/mes</strong>
-• 📅 Módulo de Citas y Agendas (con QR y Portal de Clientes): <strong>$30 USD/mes</strong>
-• 👥 Cuenta de Empleado Extra (Sub-nivel): <strong>+$5 USD/mes</strong>
-• 🌟 <strong>Combo Comercio + Citas:</strong> $40 USD/mes
-• 👑 <strong>Plan VIP Total (Todos los Módulos):</strong> $65 USD/mes
-
-📞 <strong>Soporte Técnico y Activación Directa:</strong>
-• 👤 <strong>Dueño y Soporte:</strong> Gibrand Marron
-• 📱 <strong>WhatsApp:</strong> <a href="https://wa.me/584242015806" target="_blank" style="color:#007bff; font-weight:bold;">+58 4242015806</a>
-• 📸 <strong>Instagram:</strong> <a href="https://instagram.com/gibrand_x" target="_blank" style="color:#007bff; font-weight:bold;">@gibrand_x</a>
-  `;
-
-  body.innerHTML = `<div class="gams-ai-msg assistant">${marked.parse(mensajeBienvenida)}</div>`;
-  body.scrollTop = body.scrollHeight;
 }
 
 window.enviarPreguntaGamsAI = async function() {
@@ -103,27 +68,27 @@ window.enviarPreguntaGamsAI = async function() {
     respuestaPredeterminada = `
 📦 <strong>Cómo registrar un nuevo producto en Comercio:</strong>
 1. Desliza hacia abajo en la pantalla hasta la sección <strong>"Registrar Elemento en el Sistema"</strong>.
-2. Rellena los cuadros vacíos (que ahora inician limpios con sus textos guía en clarito):
-   • <strong>Código / SKU / ID único:</strong> (Puedes ingresar varios productos con el mismo nombre pero diferente SKU/precio).
+2. Rellena los cuadros vacíos (que inician limpios con sus textos guía):
+   • <strong>Código / SKU / ID único:</strong> (Puedes registrar varios productos con el mismo nombre pero diferente SKU).
    • <strong>Nombre / Descripción:</strong> El nombre del artículo.
-   • <strong>Stock Inicial:</strong> La cantidad de unidades disponibles.
+   • <strong>Stock Inicial:</strong> Unidades disponibles.
    • <strong>Precio en Bolívares (Bs):</strong> Ingresa el precio en moneda nacional; el sistema calculará automáticamente el equivalente en dólares en el recuadro inferior.
 3. Haz clic en <strong>Guardar Elemento</strong>.
     `;
-  } else if (txt.includes("cuarto") || txt.includes("hotel") || txt.includes("habitacion") || txt.includes("registrar un cuarto")) {
+  } else if (txt.includes("cuarto") || txt.includes("hotel") || txt.includes("habitacion")) {
     respuestaPredeterminada = `
 🛏️ <strong>Cómo registrar un nuevo cuarto en Hotelería:</strong>
-1. Desliza hacia abajo en la pantalla principal hasta la sección <strong>"Registrar Elemento en el Sistema"</strong>.
-2. Rellena los campos vacíos con la información del cuarto:
-   • <strong>Código / SKU / ID único:</strong> Identificador o número del cuarto.
+1. Desliza hacia abajo hasta la sección <strong>"Registrar Elemento en el Sistema"</strong>.
+2. Rellena los campos vacíos:
+   • <strong>Código / SKU / ID único:</strong> Número o identificador del cuarto.
    • <strong>Nombre / Descripción:</strong> Ejemplo: "Habitación Doble VIP".
    • <strong>Camas y Baños:</strong> Cantidad de camas y baños.
-   • <strong>Tarifas en Bolívares (Bs):</strong> Ingresa las tarifas por hora, noche o día en moneda nacional. El sistema mostrará el equivalente en dólares en tiempo real en los recuadros verdes.
+   • <strong>Tarifas en Bolívares (Bs):</strong> Ingresa las tarifas por hora, noche o día en moneda nacional. El sistema calculará el equivalente en dólares en tiempo real.
 3. Haz clic en <strong>Guardar Elemento</strong>.
     `;
-  } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete") || txt.includes("combo")) {
+  } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("combo")) {
     respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Primer mes gratis. Comercio ($20), Hotelería ($35), Citas ($30 con Portal QR). Empleado extra (+$5). Combo Comercio+Citas ($40) y Plan VIP Total ($65).`;
-  } else if (txt.includes("soporte") || txt.includes("telefono") || txt.includes("contacto") || txt.includes("instagram")) {
+  } else if (txt.includes("soporte") || txt.includes("telefono") || txt.includes("instagram")) {
     respuestaPredeterminada = `
 📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong>
 • 📱 WhatsApp: <a href="https://wa.me/584242015806" target="_blank">+58 4242015806</a>
