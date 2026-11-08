@@ -20,9 +20,9 @@ th { background-color: #343a40; color: white; }
   body { padding: 20px; }
   .card { padding: 20px; margin-bottom: 20px; }
 }
-.error { color: #721c24; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
+.error { color: #721c24; background-color: #f8f9da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
 .badge { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-.badge-biz { background: #343a40; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+.badge-biz { background: #212529; color: #ffc107; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 13px; border: 1px solid #ffc107; }
 .sync-status { font-size: 12px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
 .sync-online { background-color: #d4edda; color: #155724; }
 .sync-offline { background-color: #f8f9fa; color: #721c24; }
@@ -33,15 +33,25 @@ th { background-color: #343a40; color: white; }
 .exchange-item span { display: block; font-size: 12px; color: #555; }
 .exchange-item strong { font-size: 15px; color: #333; }
 
-/* PESTAÑAS ACTIVAS OSCURAS */
 .nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-direction: column; flex-wrap: wrap; }
 @media (min-width: 768px) { .nav-tabs { flex-direction: row; } }
 .nav-tabs button { flex: 1; background-color: #6c757d; font-size: 13px; padding: 10px; color: white; border-radius: 4px; border: none; }
 .nav-tabs button.active { background-color: #212529 !important; font-weight: bold; border-bottom: 3px solid #007bff; color: #ffffff !important; }
 
+/* COLORES DISTINTIVOS PARA CADA PESTAÑA DEL SUPERVISOR */
 .main-system-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
-.main-system-tabs button { flex: 1; min-width: 140px; background-color: #495057; font-size: 13px; padding: 12px; border-radius: 6px; color: white; border: none; }
-.main-system-tabs button.active-sys { background-color: #212529 !important; font-weight: bold; border-bottom: 3px solid #28a745; color: #ffffff !important; }
+.main-system-tabs button { flex: 1; min-width: 130px; font-size: 13px; padding: 12px; border-radius: 6px; color: white; border: none; font-weight: bold; opacity: 0.8; transition: opacity 0.2s, transform 0.2s; }
+.main-system-tabs button:hover { opacity: 1; transform: translateY(-2px); }
+
+#sys-tab-hotel { background-color: #0069d9; }
+#sys-tab-comercio { background-color: #218838; }
+#sys-tab-citas { background-color: #6f42c1; }
+#sys-tab-referidos { background-color: #e0a800; color: #212529 !important; }
+#sys-tab-audit { background-color: #138496; }
+#sys-tab-analytics { background-color: #d39e00; }
+#sys-tab-accounts { background-color: #343a40; }
+
+.main-system-tabs button.active-sys { opacity: 1 !important; transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-bottom: 4px solid #ffffff !important; }
 
 .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
 .sticker-card { background: #ffffff; border: 2px solid #007bff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; }

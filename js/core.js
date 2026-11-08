@@ -139,6 +139,26 @@ window.addEventListener('DOMContentLoaded', async () => {
   poblarSelectoresSupervisores();
   poblarSelectAnalyticsBiz();
 
+  // Detectar enlace de referido y abrir chat directamente
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCode = urlParams.get('ref');
+
+  if (refCode) {
+    localStorage.setItem("gams_ref_active", refCode);
+    document.getElementById("license-screen").classList.remove("hidden");
+    document.getElementById("app-screen").classList.add("hidden");
+    
+    setTimeout(() => {
+      if(window.toggleGamsAIChat && document.getElementById("gams-ai-chat-window").classList.contains("hidden")) {
+        window.toggleGamsAIChat();
+      }
+      if(window.mostrarMensajeBienvenidaReferido) {
+        window.mostrarMensajeBienvenidaReferido(refCode);
+      }
+    }, 500);
+    return;
+  }
+
   if (savedRole) {
     userRole = savedRole;
     activeModule = savedMod || "HOTEL";
@@ -294,21 +314,38 @@ window.switchSystemModule = async function(mod) {
   document.getElementById("subpage-analytics").classList.add("hidden");
   document.getElementById("subpage-accounts").classList.add("hidden");
 
+  let tituloSys = "Sistema GAMS";
+  let iconoSys = "💼";
+
   if (mod === "HOTEL") {
     document.getElementById("modulo-hotel-container").classList.remove("hidden");
     if(window.switchHotelTab) switchHotelTab('rooms');
+    tituloSys = "Sistema de Hotelería"; iconoSys = "🏨";
   } else if (mod === "COMERCIO") {
     document.getElementById("modulo-comercio-container").classList.remove("hidden");
     if(window.switchComercioTab) switchComercioTab('inv');
+    tituloSys = "Sistema de Comercio & Inventario"; iconoSys = "📦";
   } else if (mod === "CITAS") {
     document.getElementById("modulo-citas-container").classList.remove("hidden");
     if(window.renderModuloCitas) window.renderModuloCitas();
+    tituloSys = "Sistema de Citas y Agendas"; iconoSys = "📅";
   } else if (mod === "REFERIDOS") {
     document.getElementById("modulo-referidos-container").classList.remove("hidden");
     if(window.renderModuloReferidos) window.renderModuloReferidos();
-  } else if (mod === "AUDIT") mostrarPanelAuditoriaTasas();
-  else if (mod === "ANALYTICS") mostrarAnalyticAndRecommendations();
-  else if (mod === "ACCOUNTS") mostrarGestionCuentas();
+    tituloSys = "Programa de Referidos"; iconoSys = "🤝";
+  } else if (mod === "AUDIT") {
+    mostrarPanelAuditoriaTasas();
+    tituloSys = "Auditoría General y Ventas"; iconoSys = "📊";
+  } else if (mod === "ANALYTICS") {
+    mostrarAnalyticAndRecommendations();
+    tituloSys = "Análisis de Datos y BI"; iconoSys = "📈";
+  } else if (mod === "ACCOUNTS") {
+    mostrarGestionCuentas();
+    tituloSys = "Gestión y Control de Cuentas"; iconoSys = "⚙️";
+  }
+
+  if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = iconoSys;
+  if(document.getElementById("system-title")) document.getElementById("system-title").innerText = tituloSys;
 }
 
 function applyModuleTheme() {
@@ -335,24 +372,18 @@ function applyModuleTheme() {
 
   if (activeModule === "HOTEL") {
     document.body.className = "theme-hotel";
-    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "🏨";
-    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Hotelería";
     if(hotelNav) hotelNav.classList.remove("hidden"); 
     if(comercioNav) comercioNav.classList.add("hidden");
     if(formHotel) formHotel.classList.remove("hidden");
     if(formComercio) formComercio.classList.add("hidden");
   } else if (activeModule === "COMERCIO") {
     document.body.className = "theme-comercio";
-    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📦";
-    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Comercio";
     if(hotelNav) hotelNav.classList.add("hidden"); 
     if(comercioNav) comercioNav.classList.remove("hidden");
     if(formHotel) formHotel.classList.add("hidden");
     if(formComercio) formComercio.classList.remove("hidden");
   } else if (activeModule === "CITAS") {
     document.body.className = "theme-citas";
-    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📅";
-    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Citas y Agendas";
     if(hotelNav) hotelNav.classList.add("hidden"); 
     if(comercioNav) comercioNav.classList.add("hidden");
     if(formHotel) formHotel.classList.add("hidden");
@@ -369,7 +400,11 @@ function configUI() {
   let statusTxt = "ACTIVO";
   let expiryTxt = "2030-12-04";
 
-  if (userRole !== "SUPERVISOR") {
+  if (userRole === "SUPERVISOR") {
+    cleanBizTxt = "👑 Dueño de GAMS Company";
+    statusTxt = "ACTIVO (♾️ Infinito)";
+    expiryTxt = "♾️ Perpetua e Ilimitada";
+  } else if (userRole !== "SUPERVISOR") {
     let matchedNeg = negociosRegistry.find(n => n.adminKey === currentAccountKey || n.empKey === currentAccountKey);
     if (matchedNeg) {
       cleanRoleTxt = currentAccountKey === matchedNeg.adminKey ? "Jefe / Administrador" : "Empleado";
@@ -377,9 +412,6 @@ function configUI() {
       statusTxt = matchedNeg.status || "ACTIVO";
       expiryTxt = matchedNeg.expiry || "2030-12-04";
     }
-  } else {
-    cleanBizTxt = "Plataforma Multinegocio Híbrida";
-    statusTxt = "ILIMITADO ♾️";
   }
 
   if(document.getElementById("user-role-clean")) document.getElementById("user-role-clean").innerText = cleanRoleTxt;
