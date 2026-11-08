@@ -37,6 +37,13 @@ function calcularFechaLicenciaUnMesDia4() {
   return d.toISOString().split('T')[0];
 }
 
+function sumarUnMesALecha(fechaStr) {
+  let d = fechaStr ? new Date(fechaStr) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return d.toISOString().split('T')[0];
+}
+
 const defaultNegocios = [
   { id: "hotel_costa_real", bizName: "Hotel Costa Real", modules: ["Hotelería"], precioLicencia: 25, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" },
   { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", modules: ["Inventario / Comercio"], precioLicencia: 15, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "" }
@@ -248,7 +255,6 @@ window.guardarTasasCuenta = async function() {
   alert(`¡Tasas oficiales guardadas!`);
 }
 
-// 🛡️ VALIDACIÓN ESTRICTA: El link de referido NO otorga acceso; se requiere clave existente obligatoria
 window.validateAuth = function() {
   const inpVal = document.getElementById("license-input").value.trim();
   if (!inpVal) return;
@@ -286,7 +292,6 @@ window.validateAuth = function() {
       modAsignado = "COMERCIO";
     }
 
-    // Si entró a través de un enlace de referido activo en el navegador, asociamos el código si no lo tenía y sumamos la comisión
     let refAsociado = localStorage.getItem("gams_ref_active");
     if (refAsociado && !foundNeg.refCode) {
       foundNeg.refCode = refAsociado;
@@ -552,31 +557,53 @@ window.enviarReporteBIPDF = function(nombreNegocio, recomendacion) {
 function mostrarGestionCuentas() {
   document.getElementById("subpage-accounts").classList.remove("hidden");
   const tbody = document.getElementById("accounts-control-table");
-  tbody.innerHTML = "";
+  const selectRef = document.getElementById("new-account-ref-select");
+  
+  if (selectRef) {
+    let promotoresData = localStorage.getItem("gams_promotores_referidos");
+    let promotores = promotoresData ? JSON.parse(promotoresData) : [];
+    selectRef.innerHTML = `<option value="">-- Sin referido directo --</option>`;
+    promotores.forEach(p => {
+      selectRef.innerHTML += `<option value="${p.codigo}">🔗 ${p.promotor} (Código: ${p.codigo})</option>`;
+    });
+  }
 
+  tbody.innerHTML = "";
   negociosRegistry.forEach((neg, idx) => {
     let isSuspended = neg.status === "SUSPENDIDO";
     let listaModulos = (neg.modules || ["Comercio"]).join(", ");
     let precio = neg.precioLicencia || 15;
+    let fechaVencimiento = neg.expiry || "2030-12-04";
+
     tbody.innerHTML += `
       <tr>
         <td><strong>${neg.bizName}</strong><br><small>Ref: ${neg.refCode || 'Ninguno'}</small></td>
         <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
-        <td>${listaModulos}</td>
+        <td><small>${listaModulos}</small><br>⏳ <strong>Vence:</strong> ${fechaVencimiento}</td>
         <td><strong>$${precio} USD</strong></td>
         <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
         <td>
-          <button class="${isSuspended ? 'btn-success' : 'btn-warning'}" style="padding: 6px; font-size: 11px;" onclick="toggleEstadoNegocio(${idx})">${isSuspended ? 'Reactivar' : 'Suspender'}</button>
-          <button class="btn-danger" style="padding: 6px; font-size: 11px;" onclick="eliminarNegocio(${idx})">Eliminar</button>
+          <button class="btn-success" style="padding: 5px; font-size: 11px; margin-bottom: 3px;" onclick="extenderLicenciaNegocio(${idx})">➕ Extender Mes</button><br>
+          <button class="${isSuspended ? 'btn-success' : 'btn-warning'}" style="padding: 5px; font-size: 11px; margin-bottom: 3px;" onclick="toggleEstadoNegocio(${idx})">${isSuspended ? 'Reactivar' : 'Suspender'}</button>
+          <button class="btn-danger" style="padding: 5px; font-size: 11px;" onclick="eliminarNegocio(${idx})">Eliminar</button>
         </td>
       </tr>`;
   });
+}
+
+window.extenderLicenciaNegocio = async function(idx) {
+  let neg = negociosRegistry[idx];
+  neg.expiry = sumarUnMesALecha(neg.expiry);
+  await saveNegociosRegistry(negociosRegistry);
+  mostrarGestionCuentas();
+  alert(`✅ Licencia de "${neg.bizName}" extendida un mes más. Nuevo vencimiento: ${neg.expiry}`);
 }
 
 window.registrarNuevaCuentaUnificada = async function() {
   const bizName = document.getElementById("new-account-biz").value.trim();
   const adminPass = document.getElementById("new-account-pass-admin").value.trim();
   const empPass = document.getElementById("new-account-pass-emp").value.trim();
+  const referidoElegido = document.getElementById("new-account-ref-select").value.trim();
   
   let modulosSeleccionados = [];
   if (document.getElementById("mod-chk-comercio").checked) modulosSeleccionados.push("Inventario / Comercio");
@@ -598,7 +625,7 @@ window.registrarNuevaCuentaUnificada = async function() {
   let adminKey = "biz_" + id + "_admin";
   let empKey = "biz_" + id + "_emp";
   let expiryStr = calcularFechaLicenciaUnMesDia4();
-  let refAsociado = localStorage.getItem("gams_ref_active") || "";
+  let codigoRefFinal = referidoElegido || localStorage.getItem("gams_ref_active") || "";
 
   negociosRegistry.push({ 
     id, 
@@ -612,12 +639,16 @@ window.registrarNuevaCuentaUnificada = async function() {
     empPass, 
     status: "ACTIVO", 
     expiry: expiryStr,
-    refCode: refAsociado 
+    refCode: codigoRefFinal 
   });
+
+  if (codigoRefFinal) {
+    registrarPuntoReferidoAutomatico(codigoRefFinal, precioTotal);
+  }
 
   await saveNegociosRegistry(negociosRegistry);
   mostrarGestionCuentas();
-  alert(`🎉 Negocio multimodular "${bizName}" registrado con éxito. Precio licencia: $${precioTotal} USD.`);
+  alert(`🎉 Negocio multimodular "${bizName}" registrado con éxito. Precio licencia: $${precioTotal} USD ${codigoRefFinal ? '(Referido acreditado: ' + codigoRefFinal + ')' : ''}.`);
 }
 
 window.toggleEstadoNegocio = async function(idx) {
