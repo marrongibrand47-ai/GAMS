@@ -193,7 +193,7 @@
   <div class="grid" id="container-actions-form">
     <div style="width: 100%;">
       <h3 id="form-create-title">1. Registrar Elemento en el Sistema</h3>
-      <input type="text" id="prod-barcode" placeholder="Código / SKU / ID">
+      <input type="text" id="prod-barcode" placeholder="Código / SKU / ID único">
       <input type="text" id="prod-name" placeholder="Nombre / Descripción">
       
       <div style="background: #f8f9fa; border: 1px dashed #007bff; border-radius: 8px; padding: 12px; margin: 8px 0;">
@@ -207,24 +207,28 @@
 
       <div id="hotel-dynamic-form">
         <div class="grid" style="gap: 5px;">
-          <input type="number" id="room-camas" placeholder="Camas" value="1">
-          <input type="number" id="room-banos" placeholder="Baños" value="1">
+          <input type="number" id="room-camas" placeholder="Camas" value="">
+          <input type="number" id="room-banos" placeholder="Baños" value="">
         </div>
         <input type="text" id="room-desc" placeholder="Comodidades">
-        <div class="grid" style="gap: 5px;">
-          <input type="number" id="price-1h" placeholder="1 Hora ($)" step="0.01">
-          <input type="number" id="price-3h" placeholder="3 Horas ($)" step="0.01">
+        
+        <div style="background: #eef5fc; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #007bff;">
+          <label style="font-size:12px; font-weight:bold; color:#0056b3;">Tarifas en Moneda Nacional (Bs) y Conversión Automática:</label>
+          <div style="margin-top:6px;"><small>Precio 1 Hora (Bs):</small><input type="number" id="price-1h-bs" placeholder="Ej: 300" step="0.01" oninput="calcularConversionBsAUSD('price-1h-bs', 'lbl-conv-1h')"><div style="font-size:11px; color:#28a745; font-weight:bold;">Equivalente: <span id="lbl-conv-1h">$0.00 USD</span></div></div>
+          <div style="margin-top:6px;"><small>Precio 3 Horas (Bs):</small><input type="number" id="price-3h-bs" placeholder="Ej: 700" step="0.01" oninput="calcularConversionBsAUSD('price-3h-bs', 'lbl-conv-3h')"><div style="font-size:11px; color:#28a745; font-weight:bold;">Equivalente: <span id="lbl-conv-3h">$0.00 USD</span></div></div>
+          <div style="margin-top:6px;"><small>Precio Noche (Bs):</small><input type="number" id="price-noche-bs" placeholder="Ej: 1200" step="0.01" oninput="calcularConversionBsAUSD('price-noche-bs', 'lbl-conv-noche')"><div style="font-size:11px; color:#28a745; font-weight:bold;">Equivalente: <span id="lbl-conv-noche">$0.00 USD</span></div></div>
+          <div style="margin-top:6px;"><small>Precio Día (Bs):</small><input type="number" id="price-dia-bs" placeholder="Ej: 1500" step="0.01" oninput="calcularConversionBsAUSD('price-dia-bs', 'lbl-conv-dia')"><div style="font-size:11px; color:#28a745; font-weight:bold;">Equivalente: <span id="lbl-conv-dia">$0.00 USD</span></div></div>
+          <div style="margin-top:6px;"><small>Precio Semana (Bs):</small><input type="number" id="price-semana-bs" placeholder="Ej: 8000" step="0.01" oninput="calcularConversionBsAUSD('price-semana-bs', 'lbl-conv-semana')"><div style="font-size:11px; color:#28a745; font-weight:bold;">Equivalente: <span id="lbl-conv-semana">$0.00 USD</span></div></div>
         </div>
-        <div class="grid" style="gap: 5px;">
-          <input type="number" id="price-noche" placeholder="Noche ($)" step="0.01">
-          <input type="number" id="price-dia" placeholder="Día ($)" step="0.01">
-        </div>
-        <input type="number" id="price-semana" placeholder="Semana ($)" step="0.01">
       </div>
 
       <div id="comercio-dynamic-form" class="hidden">
-        <input type="number" id="prod-stock" placeholder="Stock Inicial" value="10">
-        <input type="number" id="prod-price-usd" placeholder="Precio ($ USD)" step="0.01">
+        <input type="number" id="prod-stock" placeholder="Stock Inicial" value="">
+        <div style="background: #eef5fc; padding: 10px; border-radius: 6px; margin-top: 8px; border: 1px solid #007bff;">
+          <label style="font-size:12px; font-weight:bold; color:#0056b3;">Precio en Moneda Nacional (Bs) y Conversión:</label>
+          <input type="number" id="prod-price-bs" placeholder="Precio en Bolívares (Bs)" step="0.01" oninput="calcularConversionBsAUSD('prod-price-bs', 'lbl-conv-prod')">
+          <div style="font-size:12px; color:#28a745; font-weight:bold; margin-top:4px;">Equivalente en Dólares: <span id="lbl-conv-prod">$0.00 USD</span></div>
+        </div>
       </div>
 
       <button class="btn-success" style="margin-top: 10px;" onclick="createProd()">Guardar Elemento</button>

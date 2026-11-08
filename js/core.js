@@ -797,34 +797,80 @@ window.limpiarImagenCargada = function() {
   document.getElementById("img-preview-box").style.display = "none";
 };
 
+// Conversión dinámica de Moneda Nacional (Bs) a USD
+window.calcularConversionBsAUSD = async function(inputBsId, outputSpanId) {
+  const inputBs = document.getElementById(inputBsId);
+  const spanUsd = document.getElementById(outputSpanId);
+  if (!inputBs || !spanUsd) return;
+
+  let montoBs = parseFloat(inputBs.value) || 0;
+  let tasas = await getTasas(currentAccountKey);
+  let tasaDolar = tasas.dolar || 36.50;
+  let montoUsd = tasaDolar > 0 ? (montoBs / tasaDolar) : 0;
+
+  spanUsd.innerText = `$${montoUsd.toFixed(2)} USD`;
+};
+
 window.createProd = async function() {
-  const barcode = document.getElementById("prod-barcode").value.trim() || "SKU-999";
+  const barcode = document.getElementById("prod-barcode").value.trim();
   const name = document.getElementById("prod-name").value.trim();
   const img = document.getElementById("prod-img").value.trim() || defaultImgPlaceholder;
-  if (!name) return alert("Ingresa un nombre.");
+  if (!barcode || !name) return alert("Ingresa el código SKU y el nombre del elemento.");
 
   let curr = await getDbItems(currentAccountKey);
+  let tasas = await getTasas(currentAccountKey);
+  let tasaDolar = tasas.dolar || 36.50;
+
   if (activeModule === "HOTEL") {
+    let p1hBs = parseFloat(document.getElementById("price-1h-bs").value) || 0;
+    let p3hBs = parseFloat(document.getElementById("price-3h-bs").value) || 0;
+    let pNocheBs = parseFloat(document.getElementById("price-noche-bs").value) || 0;
+    let pDiaBs = parseFloat(document.getElementById("price-dia-bs").value) || 0;
+    let pSemanaBs = parseFloat(document.getElementById("price-semana-bs").value) || 0;
+
     curr.push({
       date: new Date().toLocaleDateString(), barcode, name, img,
       camas: parseInt(document.getElementById("room-camas").value) || 1,
       banos: parseInt(document.getElementById("room-banos").value) || 1,
       desc: document.getElementById("room-desc").value.trim() || "Estándar",
-      stock: 1, p1h: parseFloat(document.getElementById("price-1h").value) || 8.00,
-      pNoche: parseFloat(document.getElementById("price-noche").value) || 35.00
+      stock: 1, 
+      p1h: p1hBs / tasaDolar, p1hBs,
+      p3h: p3hBs / tasaDolar, p3hBs,
+      pNoche: pNocheBs / tasaDolar, pNocheBs,
+      pDia: pDiaBs / tasaDolar, pDiaBs,
+      pSemana: pSemanaBs / tasaDolar, pSemanaBs
     });
   } else {
+    let precioBs = parseFloat(document.getElementById("prod-price-bs").value) || 0;
+    let priceUsd = tasaDolar > 0 ? (precioBs / tasaDolar) : 0;
+
     curr.push({
       date: new Date().toLocaleDateString(), barcode, name, img,
       stock: parseInt(document.getElementById("prod-stock").value) || 0,
-      priceUsd: parseFloat(document.getElementById("prod-price-usd").value) || 0
+      priceUsd, precioBs
     });
   }
 
   await saveDbItems(currentAccountKey, curr);
-  await registrarTransaccionDiaria(currentAccountKey, "ALTA", `Nuevo ítem: ${name}`, 0);
+  await registrarTransaccionDiaria(currentAccountKey, "ALTA", `Nuevo registro: ${name} (SKU: ${barcode})`, 0);
   limpiarImagenCargada();
-  alert("¡Elemento guardado!");
+  
+  // Limpiar formulario dejando inputs vacíos
+  document.getElementById("prod-barcode").value = "";
+  document.getElementById("prod-name").value = "";
+  document.getElementById("prod-img").value = "";
+  if(document.getElementById("room-camas")) document.getElementById("room-camas").value = "";
+  if(document.getElementById("room-banos")) document.getElementById("room-banos").value = "";
+  if(document.getElementById("room-desc")) document.getElementById("room-desc").value = "";
+  if(document.getElementById("price-1h-bs")) { document.getElementById("price-1h-bs").value = ""; document.getElementById("lbl-conv-1h").innerText = "$0.00 USD"; }
+  if(document.getElementById("price-3h-bs")) { document.getElementById("price-3h-bs").value = ""; document.getElementById("lbl-conv-3h").innerText = "$0.00 USD"; }
+  if(document.getElementById("price-noche-bs")) { document.getElementById("price-noche-bs").value = ""; document.getElementById("lbl-conv-noche").innerText = "$0.00 USD"; }
+  if(document.getElementById("price-dia-bs")) { document.getElementById("price-dia-bs").value = ""; document.getElementById("lbl-conv-dia").innerText = "$0.00 USD"; }
+  if(document.getElementById("price-semana-bs")) { document.getElementById("price-semana-bs").value = ""; document.getElementById("lbl-conv-semana").innerText = "$0.00 USD"; }
+  if(document.getElementById("prod-stock")) document.getElementById("prod-stock").value = "";
+  if(document.getElementById("prod-price-bs")) { document.getElementById("prod-price-bs").value = ""; document.getElementById("lbl-conv-prod").innerText = "$0.00 USD"; }
+
+  alert("¡Elemento guardado con éxito!");
   if(activeModule === "HOTEL") switchHotelTab('rooms');
   else switchComercioTab('inv');
 }

@@ -13,9 +13,9 @@ window.renderChatAI = function() {
       </div>
       
       <div style="padding: 6px 10px; background: #e9ecef; display: flex; gap: 4px; flex-wrap: wrap; border-top: 1px solid #ced4da;">
-        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Ver Precios')">💵 Precios</button>
-        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #28a745;" onclick="preguntaRapida('Cómo obtener cuenta')">🔑 Obtener Cuenta</button>
-        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #ffc107; color: #212529;" onclick="preguntaRapida('Ayuda')">❓ Ayuda</button>
+        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #007bff;" onclick="preguntaRapida('Cómo crear un producto')">📦 Crear Producto</button>
+        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #28a745;" onclick="preguntaRapida('Cómo registrar un cuarto')">🛏️ Registrar Cuarto</button>
+        <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #ffc107; color: #212529;" onclick="preguntaRapida('Precios')">💵 Precios</button>
         <button type="button" style="padding: 4px 8px; font-size: 11px; width: auto; margin: 0; background: #dc3545;" onclick="preguntaRapida('Soporte Técnico')">📞 Soporte</button>
       </div>
 
@@ -76,11 +76,7 @@ Al crear tu cuenta con nosotros, obtienes acceso completo de prueba gratis duran
 • 🌟 <strong>Combo Comercio + Citas:</strong> $40 USD/mes
 • 👑 <strong>Plan VIP Total (Todos los Módulos):</strong> $65 USD/mes
 
-🔑 <strong>¿Cómo obtener tu cuenta?</strong>
-Debes **contactar directamente con nuestro servicio técnico**. Al crear tu cuenta te entregamos tus claves de acceso.
-
 📞 <strong>Soporte Técnico y Activación Directa:</strong>
-Escríbenos ahora mismo por WhatsApp o Instagram:
 • 👤 <strong>Dueño y Soporte:</strong> Gibrand Marron
 • 📱 <strong>WhatsApp:</strong> <a href="https://wa.me/584242015806" target="_blank" style="color:#007bff; font-weight:bold;">+58 4242015806</a>
 • 📸 <strong>Instagram:</strong> <a href="https://instagram.com/gibrand_x" target="_blank" style="color:#007bff; font-weight:bold;">@gibrand_x</a>
@@ -101,16 +97,29 @@ window.enviarPreguntaGamsAI = async function() {
   inp.value = "";
   body.scrollTop = body.scrollHeight;
 
-  let rolActual = (window.userRole || "").trim().toUpperCase();
   let respuestaPredeterminada = "";
 
-  if (txt.includes("cuenta") || txt.includes("obtener") || txt.includes("registrar") || txt.includes("comprar")) {
+  if (txt.includes("producto") || txt.includes("inventario") || txt.includes("crear producto")) {
     respuestaPredeterminada = `
-🔑 <strong>¿Cómo obtener una cuenta en GAMS?</strong>
-Para obtener tu cuenta y tus claves de acceso, **contacta a nuestro servicio técnico**. El primer mes de prueba es gratis.
-Contáctanos:
-• 📱 WhatsApp: <a href="https://wa.me/584242015806" target="_blank">+58 4242015806</a>
-• 📸 Instagram: <a href="https://instagram.com/gibrand_x" target="_blank">@gibrand_x</a>
+📦 <strong>Cómo registrar un nuevo producto en Comercio:</strong>
+1. Desliza hacia abajo en la pantalla hasta la sección <strong>"Registrar Elemento en el Sistema"</strong>.
+2. Rellena los cuadros vacíos (que ahora inician limpios con sus textos guía en clarito):
+   • <strong>Código / SKU / ID único:</strong> (Puedes ingresar varios productos con el mismo nombre pero diferente SKU/precio).
+   • <strong>Nombre / Descripción:</strong> El nombre del artículo.
+   • <strong>Stock Inicial:</strong> La cantidad de unidades disponibles.
+   • <strong>Precio en Bolívares (Bs):</strong> Ingresa el precio en moneda nacional; el sistema calculará automáticamente el equivalente en dólares en el recuadro inferior.
+3. Haz clic en <strong>Guardar Elemento</strong>.
+    `;
+  } else if (txt.includes("cuarto") || txt.includes("hotel") || txt.includes("habitacion") || txt.includes("registrar un cuarto")) {
+    respuestaPredeterminada = `
+🛏️ <strong>Cómo registrar un nuevo cuarto en Hotelería:</strong>
+1. Desliza hacia abajo en la pantalla principal hasta la sección <strong>"Registrar Elemento en el Sistema"</strong>.
+2. Rellena los campos vacíos con la información del cuarto:
+   • <strong>Código / SKU / ID único:</strong> Identificador o número del cuarto.
+   • <strong>Nombre / Descripción:</strong> Ejemplo: "Habitación Doble VIP".
+   • <strong>Camas y Baños:</strong> Cantidad de camas y baños.
+   • <strong>Tarifas en Bolívares (Bs):</strong> Ingresa las tarifas por hora, noche o día en moneda nacional. El sistema mostrará el equivalente en dólares en tiempo real en los recuadros verdes.
+3. Haz clic en <strong>Guardar Elemento</strong>.
     `;
   } else if (txt.includes("precio") || txt.includes("costo") || txt.includes("paquete") || txt.includes("combo")) {
     respuestaPredeterminada = `💵 <strong>Precios GAMS:</strong> Primer mes gratis. Comercio ($20), Hotelería ($35), Citas ($30 con Portal QR). Empleado extra (+$5). Combo Comercio+Citas ($40) y Plan VIP Total ($65).`;
@@ -136,7 +145,7 @@ Contáctanos:
     const res = await fetch('https://gibrand-digital-cores.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: `[Rol: ${rolActual}] Consulta: ${textoOriginal}`, device: 'GAMS' })
+      body: JSON.stringify({ prompt: `Consulta: ${textoOriginal}`, device: 'GAMS' })
     });
     const data = await res.json();
     document.getElementById(loadingId).remove();

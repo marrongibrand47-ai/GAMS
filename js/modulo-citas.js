@@ -45,7 +45,7 @@ window.renderModuloCitas = function() {
       </div>
 
       <div style="background: #e2f0d9; padding: 12px; border-radius: 8px; margin-top: 15px; border-left: 5px solid #385723;">
-        <h4 style="margin-top:0; color:#385723;">⏰ Control de Horarios y Disponibilidad (Estilo Alarma)</h4>
+        <h4 style="margin-top:0; color:#385723;">⏰ Control de Horarios y Disponibilidad</h4>
         <div id="resumen-horarios-profesional" style="font-size: 14px;">Selecciona un profesional para ver su jornada.</div>
       </div>
 
@@ -120,6 +120,9 @@ async function saveCitasRegistradas(list) {
 }
 
 window.crearAgendaPersonal = async function() {
+  let esEmpleado = (window.userRole || "").trim().toUpperCase() === "EMPLEADO" || (window.userRole || "").trim().toUpperCase() === "EMPLEADO_EXTRA";
+  if (esEmpleado) return alert("❌ Acceso restringido: Solo el Administrador (Jefe) puede crear agendas o personal.");
+
   const nombre = document.getElementById("agenda-nombre-personal").value.trim();
   const esp = document.getElementById("agenda-especialidad").value.trim();
   const hEntrada = document.getElementById("agenda-h-entrada").value || "08:00";
@@ -175,7 +178,7 @@ window.cargarHorariosDisponibles = async function() {
   resumenBox.innerHTML = `
     👤 <strong>${profActual ? profActual.nombre : 'Profesional'}</strong> | 
     🕒 <strong>Jornada:</strong> ${hEntrada} a ${hSalida}<br>
-    <div style="margin-top: 8px;"><strong>Estado de Bloques (Alarma / Agenda):</strong><br>${listaSlotsHTML}</div>
+    <div style="margin-top: 8px;"><strong>Disponibilidad Horaria:</strong><br>${listaSlotsHTML}</div>
   `;
 
   tbody.innerHTML = "";
@@ -222,15 +225,22 @@ window.agendarNuevaCita = async function() {
   let solapada = citas.some(c => c.personalId === personalId && c.fecha === fecha && c.hora === hora);
   
   if (solapada) {
-    return alert("⚠️ Alerta de Sistema: Este horario ya se encuentra ocupado (como una alarma activa). Selecciona otra hora disponible.");
+    return alert("⚠️ Este horario ya se encuentra ocupado. Selecciona otra hora disponible.");
   }
 
   citas.push({ id: Date.now(), personalId, fecha, cliente, tel, hora, duracion });
   await saveCitasRegistradas(citas);
   
   await registrarTransaccionDiaria(currentAccountKey, "CITA RESERVADA", `Cita agendada para ${cliente} a las ${hora}`, 0);
-  window.cargarHorariosDisponibles();
-  alert("🎉 Cita agendada correctamente sin solapamiento.");
+  
+  // Limpiar campos de cita manual
+  document.getElementById("cita-cliente-nombre").value = "";
+  document.getElementById("cita-cliente-tel").value = "";
+  document.getElementById("cita-hora-inicio").value = "";
+
+  // Refrescar inmediatamente el panel de disponibilidad de horarios
+  await window.cargarHorariosDisponibles();
+  alert("🎉 Cita agendada y reflejada en el control de horarios correctamente.");
 }
 
 window.cancelarCita = async function(id) {
