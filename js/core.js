@@ -244,19 +244,23 @@ window.validateAuth = function() {
     if (n.status === "SUSPENDIDO") continue;
     if (n.adminPass === inpVal || n.adminKey === inpVal) {
       foundNeg = n;
-      matchedRole = "ADMIN"; // Rol limpio para Jefes/Admins
+      matchedRole = "ADMIN";
       currentAccountKey = n.adminKey;
       break;
     } else if (n.empPass === inpVal || n.empKey === inpVal) {
       foundNeg = n;
-      matchedRole = "EMPLEADO"; // Rol limpio para Empleados
+      matchedRole = "EMPLEADO";
       currentAccountKey = n.empKey;
       break;
     }
   }
 
   if (foundNeg) {
-    saveAndReload(matchedRole, foundNeg.type === "Hotelería" ? "HOTEL" : "COMERCIO", currentAccountKey);
+    let modAsignado = "COMERCIO";
+    if (foundNeg.type === "Hotelería") modAsignado = "HOTEL";
+    else if (foundNeg.type === "Citas y Agendas") modAsignado = "CITAS";
+
+    saveAndReload(matchedRole, modAsignado, currentAccountKey);
     return;
   }
   document.getElementById("error-msg").innerText = "❌ Clave incorrecta.";
@@ -345,6 +349,14 @@ function applyModuleTheme() {
     if(comercioNav) comercioNav.classList.remove("hidden");
     if(formHotel) formHotel.classList.add("hidden");
     if(formComercio) formComercio.classList.remove("hidden");
+  } else if (activeModule === "CITAS") {
+    document.body.className = "theme-citas";
+    if(document.getElementById("system-icon")) document.getElementById("system-icon").innerText = "📅";
+    if(document.getElementById("system-title")) document.getElementById("system-title").innerText = "Sistema de Citas y Agendas";
+    if(hotelNav) hotelNav.classList.add("hidden"); 
+    if(comercioNav) comercioNav.classList.add("hidden");
+    if(formHotel) formHotel.classList.add("hidden");
+    if(formComercio) formComercio.classList.add("hidden");
   } else {
     if(hotelNav) hotelNav.classList.add("hidden"); 
     if(comercioNav) comercioNav.classList.add("hidden");
@@ -380,7 +392,8 @@ function configUI() {
   if (divisaPanel) {
     if (userRole === "SUPERVISOR" || userRole === "ADMIN") {
       divisaPanel.style.display = "block";
-      if(formAction) formAction.style.display = "block";
+      if(formAction && activeModule !== "CITAS") formAction.style.display = "block";
+      else if(formAction) formAction.style.display = "none";
     } else {
       divisaPanel.style.display = "none";
       if(formAction) formAction.style.display = "none";
@@ -490,7 +503,7 @@ window.registrarNuevaCuentaUnificada = async function() {
   negociosRegistry.push({ id, bizName, type, dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", expiry: expiryStr });
   await saveNegociosRegistry(negociosRegistry);
   mostrarGestionCuentas();
-  alert(`🎉 Negocio "${bizName}" registrado.`);
+  alert(`🎉 Negocio "${bizName}" registrado con éxito.`);
 }
 
 window.toggleEstadoNegocio = async function(idx) {

@@ -46,7 +46,7 @@ window.renderModuloComercio = function() {
       </div>
     </div>
 
-    <!-- CUENTAS POR COBRAR (CxC) -->
+    <!-- CUENTAS POR COBRAR -->
     <div id="subpage-comercio-cxc" class="hidden">
       <h3>💳 Cuentas por Cobrar (CxC)</h3>
       <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
