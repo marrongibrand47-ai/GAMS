@@ -544,7 +544,6 @@ function configUI() {
   }
 }
 
-// Cálculo progresivo de adicionales: $10 el 1ro, $5 los siguientes
 window.calcularCostoAdicionales = function(cantidadAdicionales) {
   if (cantidadAdicionales <= 0) return 0;
   if (cantidadAdicionales === 1) return 10;
@@ -614,17 +613,22 @@ window.eliminarEmpleadoAdmin = async function(idx) {
   alert("🗑️ Recurso adicional eliminado.");
 };
 
+// CÁLCULO DE COMBOS (COMBO DE 3 MÓDULOS ACTUALIZADO A $75 USD)
 window.calcularPrecioNuevoNegocio = function() {
   let p = 0;
   let modulosSel = 0;
-  if (document.getElementById("mod-chk-comercio")?.checked) { p += 20; modulosSel++; }
-  if (document.getElementById("mod-chk-hotel")?.checked) { p += 35; modulosSel++; }
-  if (document.getElementById("mod-chk-citas")?.checked) { p += 30; modulosSel++; }
+  let chkComercio = document.getElementById("mod-chk-comercio")?.checked;
+  let chkHotel = document.getElementById("mod-chk-hotel")?.checked;
+  let chkCitas = document.getElementById("mod-chk-citas")?.checked;
+
+  if (chkComercio) { p += 20; modulosSel++; }
+  if (chkHotel) { p += 35; modulosSel++; }
+  if (chkCitas) { p += 30; modulosSel++; }
 
   if (modulosSel >= 3) {
-    p = 65; 
-  } else if (modulosSel === 2 && document.getElementById("mod-chk-comercio")?.checked && document.getElementById("mod-chk-citas")?.checked) {
-    p = 40; 
+    p = 75; // Combo de los 3 Módulos = $75 USD
+  } else if (modulosSel === 2 && chkComercio && chkCitas) {
+    p = 40; // Combo Comercio + Citas = $40 USD
   }
 
   const lbl = document.getElementById("lbl-precio-estimado");
@@ -675,7 +679,7 @@ async function mostrarAnalyticAndRecommendations() {
   container.innerHTML = `
     <div style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da;">
       <h4>📈 Reporte de Análisis BI (${selectedNeg.bizName})</h4>
-      <p><strong>Recomendación Ejecutiva:</strong> Se sugiere reponer stock y verificar los métodos de pago móvil en horas pico para maximizar la eficiencia.</p>
+      <p><strong>Recomendación Ejecutiva:</strong> Se sugiere reponer stock y verificar los métodos de pago en horas pico para maximizar la eficiencia.</p>
       <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="descargarPDFYVaciarLibro('${selectedNeg.adminKey}', '${selectedNeg.bizName}')">📤 Descargar Reporte PDF & Vaciar Libro</button>
     </div>`;
 }
@@ -753,7 +757,7 @@ window.registrarNuevaCuentaUnificada = async function() {
     if (m === "Citas y Agendas") { precioTotal += 30; modulosSelCount++; }
   });
 
-  if (modulosSelCount >= 3) precioTotal = 65;
+  if (modulosSelCount >= 3) precioTotal = 75; // Combo de 3 módulos = $75 USD
   else if (modulosSelCount === 2 && modulosSeleccionados.includes("Inventario / Comercio") && modulosSeleccionados.includes("Citas y Agendas")) precioTotal = 40;
 
   let id = bizName.toLowerCase().replace(/\s+/g, '_') + '_' + Math.floor(Math.random()*1000);

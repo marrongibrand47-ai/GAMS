@@ -7,7 +7,7 @@ window.renderModuloComercio = function() {
     <div id="subpage-comercio-inv">
       <h3>📦 Inventario Central y Escáner de Barras</h3>
       <div style="background: #eef5fc; padding: 10px; border-radius: 6px; margin-bottom: 12px; border: 1px solid #007bff;">
-        <label style="font-size:13px; font-weight:bold;">🔍 Escanear Código de Barras (Hardware USB/Cámara):</label>
+        <label style="font-size:13px; font-weight:bold;">🔍 Escanear Código de Barras (Hardware USB / Cámara):</label>
         <input type="text" id="barcode-scanner-input" placeholder="Haz clic aquí y escanea el código del producto..." onkeypress="if(event.key === 'Enter') buscarYAgregarPorEscanner(this.value)">
       </div>
       <div style="overflow-x: auto;">
@@ -29,7 +29,7 @@ window.renderModuloComercio = function() {
     </div>
 
     <div id="subpage-comercio-pos" class="hidden">
-      <h3>🛒 Caja Registradora (POS Pro con IVA y Split Payments)</h3>
+      <h3>🛒 Caja Registradora (POS Pro con IVA, Doble Moneda $ / Bs y Split Payments)</h3>
       <div style="background:#fff; border: 2px solid #28a745; border-radius: 8px; padding:15px;">
         <div class="grid" style="gap:10px;">
           <div><label><strong>Producto:</strong></label><select id="cart-prod-select"></select></div>
@@ -43,19 +43,25 @@ window.renderModuloComercio = function() {
           <tbody id="cart-items-table"></tbody>
         </table>
 
-        <!-- RESUMEN CON IVA Y PAGO FRACCIONADO -->
+        <!-- RESUMEN CON IVA Y COBRO EN MONEDA NACIONAL (BS) -->
         <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-top: 15px; border: 1px solid #ced4da;">
-          <p style="margin:4px 0;">Subtotal: <strong id="cart-subtotal">$0.00</strong></p>
-          <p style="margin:4px 0;">IVA (16%): <strong id="cart-iva">$0.00</strong></p>
-          <p style="margin:4px 0; font-size: 18px; color: #28a745;"><strong>Total a Pagar: <span id="cart-total-usd">$0.00</span></strong></p>
+          <p style="margin:4px 0;">Subtotal: <strong id="cart-subtotal">$0.00 USD</strong> (<span id="cart-subtotal-bs">0.00 Bs</span>)</p>
+          <p style="margin:4px 0;">IVA (16%): <strong id="cart-iva">$0.00 USD</strong> (<span id="cart-iva-bs">0.00 Bs</span>)</p>
+          <p style="margin:4px 0; font-size: 19px; color: #28a745;">
+            <strong>Total a Pagar: <span id="cart-total-usd">$0.00 USD</span></strong> 
+            <br>
+            <strong style="color: #0056b3; font-size: 17px;">🇻🇪 En Bolívares (Bs): <span id="cart-total-bs">0.00 Bs</span></strong>
+          </p>
           
           <hr style="margin: 10px 0;">
           <label style="font-weight:bold; font-size:13px; color:#0056b3;">💳 Método de Pago Fraccionado (Split Payment):</label>
           <div class="grid" style="gap:8px;">
-            <div><small>Efectivo ($):</small><input type="number" id="split-efectivo" placeholder="0.00" step="0.01" oninput="calcularSplitRestante()"></div>
-            <div><small>Pago Móvil / Banco ($):</small><input type="number" id="split-banco" placeholder="0.00" step="0.01" oninput="calcularSplitRestante()"></div>
-            <div><small>Cuentas por Cobrar (CxC):</small><input type="number" id="split-cxc" placeholder="0.00" step="0.01" oninput="calcularSplitRestante()"></div>
+            <div><small>Efectivo ($):</small><input type="number" id="split-efectivo" placeholder="0.00" step="0.01"></div>
+            <div><small>Pago Móvil / Banco ($):</small><input type="number" id="split-banco" placeholder="0.00" step="0.01"></div>
+            <div><small>Cuentas por Cobrar ($ CxC):</small><input type="number" id="split-cxc" placeholder="0.00" step="0.01" oninput="document.getElementById('split-cxc-cliente').style.display = this.value > 0 ? 'block' : 'none'"></div>
           </div>
+          <input type="text" id="split-cxc-cliente" placeholder="Nombre completo del Cliente (CxC)" style="margin-top:6px; display:none;">
+          
           <div id="datos-pago-movil-pos" style="background:#eef5fc; padding:8px; border-radius:4px; margin-top:8px; font-size:12px; color:#0056b3;">
             🏦 <strong>Datos Bancarios del Negocio:</strong> Cargando...
           </div>
@@ -69,12 +75,14 @@ window.renderModuloComercio = function() {
     <div id="subpage-comercio-cxc" class="hidden">
       <h3>💳 Cuentas por Cobrar (CxC)</h3>
       <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
-        <input type="text" id="cxc-cliente" placeholder="Nombre del Cliente">
-        <input type="number" id="cxc-monto" placeholder="Monto Total Deuda ($)">
-        <button class="btn-warning" style="margin-top: 5px;" onclick="registrarCxCDirecta()">💾 Guardar Crédito</button>
+        <label style="font-weight:bold;">Registrar Deuda / Crédito Nuevo:</label>
+        <input type="text" id="cxc-cliente" placeholder="Nombre completo del Cliente">
+        <input type="number" id="cxc-monto" placeholder="Monto Total Deuda ($ USD)" step="0.01">
+        <button class="btn-warning" style="margin-top: 8px;" onclick="registrarCxCDirecta()">💾 Guardar Crédito en Libro CxC</button>
       </div>
-      <table style="margin-top:15px;">
-        <thead><tr><th>Cliente</th><th>Monto ($)</th><th>Estado</th></tr></thead>
+      <h4 style="margin-top:20px;">Libro de Cuentas por Cobrar Registradas</h4>
+      <table style="margin-top:10px;">
+        <thead><tr><th>Fecha</th><th>Cliente</th><th>Monto ($)</th><th>Estado</th><th>Acción</th></tr></thead>
         <tbody id="cxc-table-list"></tbody>
       </table>
     </div>
@@ -117,6 +125,7 @@ window.switchComercioTab = function(tab) {
   } else if (tab === 'cxc') {
     document.getElementById("subpage-comercio-cxc").classList.remove("hidden");
     document.getElementById("c-tab-cxc").classList.add("active");
+    renderizarTablaCxC();
   } else if (tab === 'album') {
     document.getElementById("subpage-comercio-album").classList.remove("hidden");
     document.getElementById("c-tab-album").classList.add("active");
@@ -135,7 +144,7 @@ window.updateTblComercio = async function() {
   let curr = await getDbItems(currentAccountKey);
 
   if (curr.length === 0) {
-    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Sin productos.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Sin productos registrados.</td></tr>";
     return;
   }
 
@@ -199,23 +208,36 @@ window.buscarYAgregarPorEscanner = async function(barcode) {
   }
 };
 
-function renderizarCarrito() {
+async function renderizarCarrito() {
   const tbody = document.getElementById("cart-items-table");
   if (!tbody) return;
   tbody.innerHTML = "";
-  let subtotal = 0;
+  let subtotalUsd = 0;
+  
   cartItems.forEach((item, idx) => {
     let sub = item.price * item.qty;
-    subtotal += sub;
+    subtotalUsd += sub;
     tbody.innerHTML += `<tr><td>${item.name}</td><td>$${item.price.toFixed(2)}</td><td>${item.qty}</td><td>$${sub.toFixed(2)}</td><td><button class="btn-delete" onclick="cartItems.splice(${idx},1);renderizarCarrito();">🗑️</button></td></tr>`;
   });
-  
-  let iva = subtotal * 0.16; // 16% IVA estándar
-  let total = subtotal + iva;
 
-  document.getElementById("cart-subtotal").innerText = `$${subtotal.toFixed(2)}`;
-  document.getElementById("cart-iva").innerText = `$${iva.toFixed(2)}`;
-  document.getElementById("cart-total-usd").innerText = `$${total.toFixed(2)}`;
+  let tasas = await getTasas(currentAccountKey);
+  let tasaBs = tasas.dolar || 36.50;
+
+  let ivaUsd = subtotalUsd * 0.16; // 16% IVA
+  let totalUsd = subtotalUsd + ivaUsd;
+
+  let subtotalBs = subtotalUsd * tasaBs;
+  let ivaBs = ivaUsd * tasaBs;
+  let totalBs = totalUsd * tasaBs;
+
+  document.getElementById("cart-subtotal").innerText = `$${subtotalUsd.toFixed(2)} USD`;
+  document.getElementById("cart-subtotal-bs").innerText = `${subtotalBs.toFixed(2)} Bs`;
+
+  document.getElementById("cart-iva").innerText = `$${ivaUsd.toFixed(2)} USD`;
+  document.getElementById("cart-iva-bs").innerText = `${ivaBs.toFixed(2)} Bs`;
+
+  document.getElementById("cart-total-usd").innerText = `$${totalUsd.toFixed(2)} USD`;
+  document.getElementById("cart-total-bs").innerText = `${totalBs.toFixed(2)} Bs`;
 }
 
 async function cargarDatosBancariosEnPOS() {
@@ -225,7 +247,7 @@ async function cargarDatosBancariosEnPOS() {
   if (neg && neg.banco) {
     box.innerHTML = `🏦 <strong>Banco:</strong> ${neg.banco} | 📱 <strong>Teléfono/Cuenta:</strong> ${neg.telefono} | 📄 <strong>RIF/ID:</strong> ${neg.rif}`;
   } else {
-    box.innerHTML = `🏦 <strong>Datos Bancarios:</strong> Configurados de forma estándar para este local.`;
+    box.innerHTML = `🏦 <strong>Datos Bancarios:</strong> Banesco / Pago Móvil predeterminado.`;
   }
 }
 
@@ -238,11 +260,11 @@ window.procesarVentaCajaRegistradora = async function() {
   let efec = parseFloat(document.getElementById("split-efectivo").value) || 0;
   let banco = parseFloat(document.getElementById("split-banco").value) || 0;
   let cxc = parseFloat(document.getElementById("split-cxc").value) || 0;
-  let ref = document.getElementById("split-ref-banco").value.trim();
+  let clienteCxC = document.getElementById("split-cxc-cliente").value.trim() || "Cliente POS";
 
   let sumaPagos = efec + banco + cxc;
   if (Math.abs(sumaPagos - totalPagar) > 0.05) {
-    return alert(`⚠️ La suma de los pagos fraccionados ($${sumaPagos.toFixed(2)}) no coincide con el total con IVA ($${totalPagar.toFixed(2)}).`);
+    return alert(`⚠️ La suma de los pagos fraccionados ($${sumaPagos.toFixed(2)}) no coincide con el total ($${totalPagar.toFixed(2)}).`);
   }
 
   let curr = await getDbItems(currentAccountKey);
@@ -259,22 +281,89 @@ window.procesarVentaCajaRegistradora = async function() {
   }
 
   await saveDbItems(currentAccountKey, curr);
-  await registrarTransaccionDiaria(currentAccountKey, "VENTA POS MIXTA", `Venta de ${cartItems.length} ítems (Efec: $${efec}, Banco: $${banco}, CxC: $${cxc})`, totalPagar);
+  await registrarTransaccionDiaria(currentAccountKey, "VENTA POS", `Venta de ${cartItems.length} productos (Efec: $${efec}, Banco: $${banco}, CxC: $${cxc})`, totalPagar);
 
   if (cxc > 0) {
     let creditos = JSON.parse(localStorage.getItem(`gams_cxc_${currentAccountKey}`) || "[]");
-    creditos.push({ cliente: "Cliente POS", monto: cxc, estado: "PENDIENTE", fecha: new Date().toLocaleDateString() });
+    creditos.push({
+      fecha: new Date().toLocaleDateString(),
+      cliente: clienteCxC,
+      monto: cxc,
+      estado: "PENDIENTE"
+    });
     localStorage.setItem(`gams_cxc_${currentAccountKey}`, JSON.stringify(creditos));
   }
 
-  alert(`✅ Venta procesada con éxito. Total registrado: $${totalPagar.toFixed(2)} USD (Incluye IVA). Inventario actualizado.`);
+  alert(`✅ Venta procesada con éxito. Total cobrado: $${totalPagar.toFixed(2)} USD (Incluye IVA). Inventario y Libro Diario actualizados.`);
   cartItems = [];
   document.getElementById("split-efectivo").value = "";
   document.getElementById("split-banco").value = "";
   document.getElementById("split-cxc").value = "";
-  document.getElementById("split-ref-banco").value = "";
+  document.getElementById("split-cxc-cliente").value = "";
+  document.getElementById("split-cxc-cliente").style.display = "none";
   renderizarCarrito();
   window.updateTblComercio();
+};
+
+window.registrarCxCDirecta = async function() {
+  const cliente = document.getElementById("cxc-cliente").value.trim();
+  const monto = parseFloat(document.getElementById("cxc-monto").value) || 0;
+
+  if (!cliente || monto <= 0) {
+    return alert("Ingresa el nombre del cliente y un monto de deuda válido mayor a $0 USD.");
+  }
+
+  let creditos = JSON.parse(localStorage.getItem(`gams_cxc_${currentAccountKey}`) || "[]");
+  creditos.push({
+    fecha: new Date().toLocaleDateString(),
+    cliente: cliente,
+    monto: monto,
+    estado: "PENDIENTE"
+  });
+
+  localStorage.setItem(`gams_cxc_${currentAccountKey}`, JSON.stringify(creditos));
+  await registrarTransaccionDiaria(currentAccountKey, "CRÉDITO / CXC", `Crédito otorgado a ${cliente}`, monto);
+
+  document.getElementById("cxc-cliente").value = "";
+  document.getElementById("cxc-monto").value = "";
+  renderizarTablaCxC();
+  alert(`✅ Crédito de $${monto.toFixed(2)} USD registrado a nombre de "${cliente}" en el Libro de CxC.`);
+};
+
+function renderizarTablaCxC() {
+  const tbody = document.getElementById("cxc-table-list");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+  let creditos = JSON.parse(localStorage.getItem(`gams_cxc_${currentAccountKey}`) || "[]");
+
+  if (creditos.length === 0) {
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No hay cuentas por cobrar pendientes.</td></tr>";
+    return;
+  }
+
+  creditos.forEach((c, idx) => {
+    let esPagado = c.estado === "PAGADO";
+    tbody.innerHTML += `
+      <tr>
+        <td><small>${c.fecha || '-'}</small></td>
+        <td><strong>${c.cliente}</strong></td>
+        <td>$${c.monto.toFixed(2)} USD</td>
+        <td><span class="badge ${esPagado ? 'btn-success' : 'btn-warning'}">${c.estado}</span></td>
+        <td>
+          ${!esPagado ? `<button class="btn-success" style="padding:4px 8px; font-size:12px;" onclick="marcarCxCPagada(${idx})">Saldar Deuda</button>` : '🟢 Saldado'}
+        </td>
+      </tr>`;
+  });
+}
+
+window.marcarCxCPagada = async function(idx) {
+  let creditos = JSON.parse(localStorage.getItem(`gams_cxc_${currentAccountKey}`) || "[]");
+  let c = creditos[idx];
+  c.estado = "PAGADO";
+  localStorage.setItem(`gams_cxc_${currentAccountKey}`, JSON.stringify(creditos));
+  await registrarTransaccionDiaria(currentAccountKey, "COBRO CXC", `Pago de deuda recibido de ${c.cliente}`, c.monto);
+  renderizarTablaCxC();
+  alert(`✅ La deuda de ${c.cliente} fue marcada como saldada.`);
 };
 
 async function renderAlbumComercio() {
