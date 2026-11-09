@@ -1,228 +1,88 @@
-/* =========================================
-   ESTILOS GENERALES Y TEMAS GAMS
-   ========================================= */
-body {
-  font-family: 'Times New Roman', Times, serif;
-  background-color: #f4f6f9;
-  color: #212529;
-  margin: 0;
-  padding: 15px;
-}
-
-.card {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  max-width: 900px;
-  margin: auto auto 20px auto;
-  border: 1px solid #dee2e6;
-}
-
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 6px 0 12px 0;
-  border: 1px solid #ced4da;
-  border-radius: 6px;
-  box-sizing: border-box;
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 14px;
-}
-
-button {
-  background-color: #0056b3;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  width: 100%;
-  font-family: 'Times New Roman', Times, serif;
-}
-button:hover { opacity: 0.9; }
-
-.btn-success { background-color: #28a745 !important; }
-.btn-warning { background-color: #ffc107 !important; color: #212529 !important; }
-.btn-danger { background-color: #dc3545 !important; }
-
+body { font-family: Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 10px; box-sizing: border-box; transition: background 0.3s; }
+.card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 1100px; margin: auto; margin-bottom: 15px; border-top: 4px solid #007bff; transition: border-color 0.3s; }
 .hidden { display: none !important; }
+input, select, textarea, button { padding: 12px; margin: 6px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; }
+button { background-color: #007bff; color: white; border: none; font-weight: bold; cursor: pointer; }
+button:hover { background-color: #0056b3; }
+.btn-success { background-color: #28a745; color: white; }
+.btn-success:hover { background-color: #218838; }
+.btn-warning { background-color: #ffc107; color: #212529; }
+.btn-warning:hover { background-color: #e0a800; }
+.btn-danger { background-color: #dc3545; color: white; }
+.btn-danger:hover { background-color: #bd2130; }
+.btn-delete { background-color: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+th, td { border: 1px solid #ddd; padding: 8px; text-align: left; word-break: break-word; }
+th { background-color: #343a40; color: white; }
+.grid { display: flex; flex-direction: column; gap: 15px; }
+@media (min-width: 768px) {
+  .grid { flex-direction: row; }
+  body { padding: 20px; }
+  .card { padding: 20px; margin-bottom: 20px; }
+}
+.error { color: #721c24; background-color: #f8f9fa; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; font-size: 14px; margin-top: 10px; display: none; }
+.badge { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+.badge-biz { background: #212529; color: #ffc107; padding: 5px 10px; border-radius: 4px; font-weight: bold; font-size: 13px; border: 1px solid #ffc107; }
+.sync-status { font-size: 12px; font-weight: bold; padding: 3px 8px; border-radius: 4px; }
+.sync-online { background-color: #d4edda; color: #155724; }
+.sync-offline { background-color: #f8f9fa; color: #721c24; }
+.license-status-box { background-color: #e2f0d9; border-left: 5px solid #385723; padding: 10px 15px; border-radius: 6px; margin-bottom: 15px; font-size: 14px; display: flex; flex-direction: column; gap: 5px; }
+@media (min-width: 768px) { .license-status-box { flex-direction: row; justify-content: space-between; align-items: center; } }
+.exchange-ticker { background: #f8f9fa; border: 1px solid #cbd3da; border-radius: 6px; padding: 10px 15px; margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; text-align: center; }
+.exchange-item { background: white; padding: 8px; border-radius: 4px; border-left: 4px solid #007bff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.exchange-item span { display: block; font-size: 12px; color: #555; }
+.exchange-item strong { font-size: 15px; color: #333; }
 
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-th, td {
-  border: 1px solid #dee2e6;
-  padding: 10px;
-  text-align: left;
-  font-size: 13px;
-}
-th {
-  background-color: #e9ecef;
-  color: #212529;
-}
+.nav-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-direction: column; flex-wrap: wrap; }
+@media (min-width: 768px) { .nav-tabs { flex-direction: row; } }
+.nav-tabs button { flex: 1; background-color: #6c757d; font-size: 13px; padding: 10px; color: white; border-radius: 4px; border: none; }
+.nav-tabs button.active { background-color: #212529 !important; font-weight: bold; border-bottom: 3px solid #007bff; color: #ffffff !important; }
 
-.grid { display: flex; gap: 10px; flex-wrap: wrap; }
-.grid > div { flex: 1; min-width: 200px; }
+.main-system-tabs { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+.main-system-tabs button { flex: 1; min-width: 130px; font-size: 13px; padding: 12px; border-radius: 6px; color: white; border: none; font-weight: bold; opacity: 0.8; transition: opacity 0.2s, transform 0.2s; }
+.main-system-tabs button:hover { opacity: 1; transform: translateY(-2px); }
 
-.badge { background: #007bff; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
-.badge-biz { background: #6f42c1; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+#sys-tab-hotel { background-color: #0069d9; }
+#sys-tab-comercio { background-color: #218838; }
+#sys-tab-citas { background-color: #6f42c1; }
+#sys-tab-referidos { background-color: #e0a800; color: #212529 !important; }
+#sys-tab-audit { background-color: #138496; }
+#sys-tab-analytics { background-color: #d39e00; }
+#sys-tab-accounts { background-color: #343a40; }
 
-/* Ticker de Divisas */
-.exchange-ticker {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  background: #eef5fc;
-  padding: 10px;
-  border-radius: 6px;
-  margin-bottom: 15px;
-  border: 1px solid #b8daff;
-}
-.exchange-item {
-  background: white;
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid #cce5ff;
-  font-size: 12px;
-  white-space: nowrap;
-  display: flex;
-  flex-direction: column;
-}
+.main-system-tabs button.active-sys { opacity: 1 !important; transform: scale(1.02); box-shadow: 0 4px 10px rgba(0,0,0,0.2); border-bottom: 4px solid #ffffff !important; }
 
-/* Pestañas de Navegación */
-.nav-tabs, .main-system-tabs {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-}
-.nav-tabs button, .main-system-tabs button {
-  background: #6c757d;
-  width: auto;
-  padding: 8px 14px;
-  font-size: 13px;
-}
-.nav-tabs button.active, .main-system-tabs button.active-sys {
-  background: #28a745 !important;
-}
+.album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 15px; margin-top: 15px; }
+.sticker-card { background: #ffffff; border: 2px solid #007bff; border-radius: 12px; padding: 12px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1); position: relative; }
+.sticker-img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; background-color: #f0f0f0; }
+.sticker-title { font-size: 15px; font-weight: bold; margin: 8px 0 2px 0; color: #333; }
+.sticker-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-top: 4px; }
+.sticker-badge.ok { background-color: #d4edda; color: #155724; }
+.sticker-badge.low { background-color: #f8f9fa; color: #721c24; }
 
-/* Galería y Cuartos */
-.room-grid, .album-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-  margin-top: 15px;
-}
-.room-card, .sticker-card {
-  background: white;
-  border: 1px solid #ced4da;
-  border-radius: 8px;
-  padding: 12px;
-  text-align: center;
-}
-.sticker-img {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
+/* CHAT WIDGET */
+.gams-ai-chat-btn { position: fixed; bottom: 20px; right: 20px; background: #007bff; color: white; border: none; border-radius: 50px; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+.gams-ai-chat-window { position: fixed; bottom: 90px; right: 20px; width: 360px; max-width: 90vw; height: 500px; background: white; border-radius: 12px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; z-index: 9999; border: 1px solid #ced4da; overflow: hidden; }
+.gams-ai-chat-header { background: #007bff; color: white; padding: 12px 15px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+.gams-ai-chat-body { flex: 1; padding: 12px; overflow-y: auto; background: #f8f9fa; display: flex; flex-direction: column; gap: 10px; font-size: 14px; word-break: break-word; }
+.gams-ai-msg { padding: 10px 14px; border-radius: 8px; max-width: 85%; line-height: 1.5; }
+.gams-ai-msg.user { background: #007bff; color: white; align-self: flex-end; }
+.gams-ai-msg.assistant { background: #e9ecef; color: #333; align-self: flex-start; border: 1px solid #ced4da; }
 
-/* =========================================
-   BOTÓN FLOTANTE MODO OSCURO (ESQUINA SUPERIOR DERECHA)
-   ========================================= */
-.dark-mode-toggle-btn {
-  position: fixed;
-  top: 15px;
-  right: 15px;
-  background: #212529;
-  color: #ffffff;
-  border: 1px solid #495057;
-  border-radius: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.2s;
-}
-.dark-mode-toggle-btn:hover {
-  background: #343a40;
-}
+body.theme-hotel { background-color: #eef5fc; }
+body.theme-comercio { background-color: #f4f6f4; }
+body.theme-citas { background-color: #fbf4fe; }
+body.theme-referidos { background-color: #fff8e1; }
+body.theme-audit { background-color: #f1f3f5; }
 
-/* =========================================
-   PALETA PROFESIONAL DE MODO OSCURO (POR DISPOSITIVO)
-   ========================================= */
-body.dark-mode {
-  background-color: #121212 !important;
-  color: #f8f9fa !important;
-}
-
-body.dark-mode h1,
-body.dark-mode h2,
-body.dark-mode h3,
-body.dark-mode h4,
-body.dark-mode h5,
-body.dark-mode h6,
-body.dark-mode strong,
-body.dark-mode label,
-body.dark-mode span,
-body.dark-mode p,
-body.dark-mode div,
-body.dark-mode th,
-body.dark-mode td {
-  color: #f8f9fa !important;
-}
-
-body.dark-mode .card,
-body.dark-mode .reserva-card,
-body.dark-mode div[style*="background: white"],
-body.dark-mode div[style*="background:#fff"],
-body.dark-mode div[style*="background: #ffffff"],
-body.dark-mode div[style*="background: #f8f9fa"],
-body.dark-mode div[style*="background: #e9ecef"] {
-  background-color: #1e1e1e !important;
-  color: #f8f9fa !important;
-  border-color: #333333 !important;
-}
-
-body.dark-mode input,
-body.dark-mode select,
-body.dark-mode textarea {
-  background-color: #2c2c2c !important;
-  color: #ffffff !important;
-  border-color: #495057 !important;
-}
-
-body.dark-mode input::placeholder,
-body.dark-mode textarea::placeholder {
-  color: #adb5bd !important;
-}
-
-body.dark-mode table {
-  color: #f8f9fa !important;
-  background-color: #1e1e1e !important;
-}
-
-body.dark-mode th {
-  background-color: #252525 !important;
-  color: #ffffff !important;
-  border-color: #333333 !important;
-}
-
-body.dark-mode td {
-  border-color: #333333 !important;
-  background-color: #1e1e1e !important;
-}
-
-body.dark-mode tr:nth-child(even) {
-  background-color: #161616 !important;
+/* ================================================= */
+/* ADAPTACIÓN TÁCTIL PARA MÓVILES Y TABLETS (PWA)    */
+/* ================================================= */
+@media screen and (max-width: 1024px) {
+  body { padding: 6px !important; }
+  .card { padding: 12px !important; margin-bottom: 12px !important; }
+  button, .btn-success, .btn-warning, .btn-danger { padding: 14px 18px !important; font-size: 16px !important; min-height: 48px !important; margin: 6px 0 !important; }
+  input, select, textarea { font-size: 16px !important; padding: 12px !important; margin: 6px 0 10px 0 !important; }
+  .nav-tabs button, .main-system-tabs button { padding: 10px 12px !important; font-size: 13px !important; }
+  table th, table td { padding: 8px 6px !important; font-size: 12px !important; }
 }

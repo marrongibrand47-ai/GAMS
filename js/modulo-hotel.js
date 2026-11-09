@@ -7,12 +7,15 @@ window.renderModuloHotel = function() {
       <div id="rooms-grid-container" class="room-grid"></div>
     </div>
     <div id="subpage-hotel-checkin" class="hidden">
-      <h3>🛎️ Realizar Check-In</h3>
+      <h3>🛎️ Realizar Check-In con Datos de Contacto</h3>
       <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da;">
         <label><strong>Seleccionar Cuarto:</strong></label>
         <select id="checkin-room-select" style="font-weight:bold; color:#0056b3;"></select>
         <input type="text" id="checkin-cliente" placeholder="Nombre del Huésped">
         <input type="text" id="checkin-doc" placeholder="Cédula / Pasaporte">
+        <input type="text" id="checkin-tel" placeholder="Número de Teléfono / WhatsApp">
+        <input type="email" id="checkin-email" placeholder="Correo Electrónico (Gmail)">
+        
         <label><strong>Tarifa a Cobrar:</strong></label>
         <select id="checkin-tarifa" style="font-weight:bold;">
           <option value="1h">1 Hora</option>
@@ -21,7 +24,7 @@ window.renderModuloHotel = function() {
           <option value="dia">Día Completo</option>
           <option value="semana">Semana</option>
         </select>
-        <button class="btn-success" style="margin-top: 10px;" onclick="procesarCheckInHotel()">🛎️ Confirmar Check-In</button>
+        <button class="btn-success" style="margin-top: 10px;" onclick="procesarCheckInHotel()">🛎️ Confirmar Check-In y Cobro</button>
       </div>
     </div>
     <div id="subpage-hotel-album" class="hidden">
@@ -106,24 +109,32 @@ window.procesarCheckInHotel = async function() {
   const idx = document.getElementById("checkin-room-select").value;
   const cliente = document.getElementById("checkin-cliente").value.trim();
   const doc = document.getElementById("checkin-doc").value.trim();
+  const tel = document.getElementById("checkin-tel").value.trim();
+  const email = document.getElementById("checkin-email").value.trim();
   const tarifa = document.getElementById("checkin-tarifa").value;
 
-  if (!cliente || idx === "") return alert("Completa todos los datos del Check-In.");
+  if (!cliente || idx === "") return alert("Completa todos los datos obligatorios del Check-In.");
 
   let curr = await getDbItems(currentAccountKey);
   let room = curr[idx];
-  let monto = tarifa === '1h' ? (room.p1h || 8) : (tarifa === '3h' ? (room.p3h || 18) : (room.pNoche || 35));
+  let montoBase = tarifa === '1h' ? (room.p1h || 8) : (tarifa === '3h' ? (room.p3h || 18) : (room.pNoche || 35));
+  let montoConIva = montoBase * 1.16; // Incluyendo 16% IVA
 
   room.ocupado = true;
   room.huesped = cliente;
   room.documento = doc;
+  room.telefono = tel;
+  room.email = email;
   room.tarifaTipo = tarifa;
 
   await saveDbItems(currentAccountKey, curr);
-  await registrarTransaccionDiaria(currentAccountKey, "CHECK-IN", `Huésped ${cliente} en ${room.name}`, monto);
-  alert(`✅ Check-In exitoso en ${room.name}. Cobrado: $${monto.toFixed(2)} USD`);
+  await registrarTransaccionDiaria(currentAccountKey, "CHECK-IN", `Huésped ${cliente} (${tel}) en ${room.name}`, montoConIva);
+  alert(`✅ Check-In exitoso en ${room.name}. Cobrado con IVA: $${montoConIva.toFixed(2)} USD`);
+  
   document.getElementById("checkin-cliente").value = "";
   document.getElementById("checkin-doc").value = "";
+  document.getElementById("checkin-tel").value = "";
+  document.getElementById("checkin-email").value = "";
   switchHotelTab('rooms');
 }
 
@@ -158,7 +169,7 @@ async function renderOccupiedTable() {
       <tr>
         <td><strong>${room.name}</strong></td>
         <td>${room.huesped}</td>
-        <td>${room.documento || 'N/A'}</td>
+        <td>${room.documento || 'N/A'} (${room.telefono || 'Sin tel'})</td>
         <td>${room.tarifaTipo.toUpperCase()}</td>
         <td><button class="btn-success" style="padding:4px;" onclick="liberarCuartoHotel('${room.barcode}')">Liberar / Check-Out</button></td>
       </tr>`;
@@ -172,6 +183,8 @@ window.liberarCuartoHotel = async function(barcode) {
     room.ocupado = false;
     room.huesped = "";
     room.documento = "";
+    room.telefono = "";
+    room.email = "";
     room.tarifaTipo = "";
     await saveDbItems(currentAccountKey, curr);
     await registrarTransaccionDiaria(currentAccountKey, "CHECK-OUT", `Liberación de ${room.name}`, 0);

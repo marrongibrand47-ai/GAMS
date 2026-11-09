@@ -45,8 +45,8 @@ function sumarUnMesALecha(fechaStr) {
 }
 
 const defaultNegocios = [
-  { id: "hotel_costa_real", bizName: "Hotel Costa Real", modules: ["Hotelería"], precioLicencia: 35, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] },
-  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", modules: ["Inventario / Comercio"], precioLicencia: 20, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] }
+  { id: "hotel_costa_real", bizName: "Hotel Costa Real", pais: "VE", banco: "Banesco", telefono: "04240000000", rif: "J-00000000-0", modules: ["Hotelería"], precioLicenciaBase: 35, precioLicencia: 35, dbTarget: "NUEVA", adminKey: "hotel_mama1", adminPass: "mama1", empKey: "hotel_empleado1", empPass: "empleado1", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] },
+  { id: "comercio_abastos_gams", bizName: "Comercializadora & Abastos GAMS", pais: "VE", banco: "Mercantil", telefono: "04140000000", rif: "J-11111111-1", modules: ["Inventario / Comercio"], precioLicenciaBase: 20, precioLicencia: 20, dbTarget: "VIEJA", adminKey: "comercio_comercio123", adminPass: "comercio123", empKey: "comercio_empleadocomercio123", empPass: "empleadocomercio123", status: "ACTIVO", expiry: calcularFechaLicenciaUnMesDia4(), refCode: "", payMode: "LOCAL", empleadosExtra: [] }
 ];
 
 function obtenerIdentificadorRaizNegocio(key) {
@@ -144,7 +144,7 @@ window.descargarPDFYVaciarLibro = async function(key, nombreNegocio) {
       await activeDb.collection("gams_diario").doc(raizKey).set({ transacciones: [] });
       alert(`✅ Reporte PDF descargado y libro diario de "${nombreNegocio}" vaciado exitosamente.`);
     } catch(e) {
-      alert(`⚠️ PDF descargado y vaciado localmente. Se sincronizará en la nube al reconectar.`);
+      alert(`⚠️ PDF descargado y vaciado localmente. Se sincronizará al reconectar.`);
     }
   } else {
     alert(`⚠️ Dispositivo offline: PDF descargado y vaciado localmente.`);
@@ -172,24 +172,6 @@ async function saveNegociosRegistry(list) {
 }
 
 window.addEventListener('DOMContentLoaded', async () => {
-  // Inicializar Botón de Modo Oscuro Independiente en esquina superior derecha
-  if (!document.getElementById("darkModeToggleBtn")) {
-    const btnDark = document.createElement("button");
-    btnDark.id = "darkModeToggleBtn";
-    btnDark.className = "dark-mode-toggle-btn";
-    btnDark.innerHTML = "🌙 <span>Modo Oscuro</span>";
-    btnDark.title = "Cambiar modo visual en este dispositivo";
-    btnDark.onclick = toggleDarkModeDevice;
-    document.body.appendChild(btnDark);
-  }
-
-  let modoOscuroActivo = localStorage.getItem("gams_dark_mode_device") === "true";
-  if (modoOscuroActivo) {
-    document.body.classList.add("dark-mode");
-    const btn = document.getElementById("darkModeToggleBtn");
-    if (btn) btn.innerHTML = "☀️ <span>Modo Claro</span>";
-  }
-
   await initFirebaseData();
   if(window.renderModuloHotel) renderModuloHotel();
   if(window.renderModuloComercio) renderModuloComercio();
@@ -235,15 +217,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     switchSystemModule(activeModule);
   }
 });
-
-function toggleDarkModeDevice() {
-  let esOscuro = document.body.classList.toggle("dark-mode");
-  localStorage.setItem("gams_dark_mode_device", esOscuro);
-  const btn = document.getElementById("darkModeToggleBtn");
-  if (btn) {
-    btn.innerHTML = esOscuro ? "☀️ <span>Modo Claro</span>" : "🌙 <span>Modo Oscuro</span>";
-  }
-}
 
 function poblarSelectoresSupervisores(filtro = "") {
   const select = document.getElementById("supervisor-target-account");
@@ -452,7 +425,7 @@ window.switchSystemModule = async function(mod) {
   } else if (mod === "EMPLEADOS") {
     document.getElementById("subpage-empleados-admin").classList.remove("hidden");
     renderizarGestionEmpleadosAdmin();
-    tituloSys = "Gestión de Empleados"; iconoSys = "👥";
+    tituloSys = "Gestión de Empleados y POS"; iconoSys = "👥";
   } else if (mod === "AUDIT") {
     mostrarPanelAuditoriaTasas();
     tituloSys = "Auditoría General y Ventas"; iconoSys = "📊";
@@ -550,7 +523,7 @@ function configUI() {
         }
       });
       if (userRole === "ADMIN") {
-        navContainer.innerHTML += `<button id="sys-tab-empleados" onclick="switchSystemModule('EMPLEADOS')" style="background-color: #6f42c1;">👥 Empleados</button>`;
+        navContainer.innerHTML += `<button id="sys-tab-empleados" onclick="switchSystemModule('EMPLEADOS')" style="background-color: #6f42c1;">👥 Empleados & POS</button>`;
       }
     } else {
       navContainer.innerHTML = `<button id="sys-tab-comercio" onclick="switchSystemModule('COMERCIO')">📦 Comercio</button>`;
@@ -571,6 +544,13 @@ function configUI() {
   }
 }
 
+// Cálculo progresivo de adicionales: $10 el 1ro, $5 los siguientes
+window.calcularCostoAdicionales = function(cantidadAdicionales) {
+  if (cantidadAdicionales <= 0) return 0;
+  if (cantidadAdicionales === 1) return 10;
+  return 10 + (cantidadAdicionales - 1) * 5;
+};
+
 window.renderizarGestionEmpleadosAdmin = function() {
   const tbody = document.getElementById("tabla-empleados-admin-list");
   if (!tbody) return;
@@ -581,67 +561,75 @@ window.renderizarGestionEmpleadosAdmin = function() {
   if (!neg.empleadosExtra) neg.empleadosExtra = [];
 
   if (neg.empleadosExtra.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">No hay cuentas de empleado adicionales creadas.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay recursos adicionales (empleados o POS físicos) registrados.</td></tr>`;
     return;
   }
 
   neg.empleadosExtra.forEach((emp, idx) => {
+    let tipoTxt = emp.tipo === 'POS' ? '🖥️ POS Físico' : '👤 Empleado';
     tbody.innerHTML += `
       <tr>
-        <td><strong>${emp.pass}</strong></td>
-        <td><span style="color:green; font-weight:bold;">🟢 Activo (+ $5/mes)</span></td>
+        <td><strong>${emp.user || emp.pass}</strong></td>
+        <td>${tipoTxt}</td>
+        <td><span style="color:green; font-weight:bold;">🟢 Activo</span></td>
         <td><button class="btn-danger" style="padding:4px 10px; font-size:12px;" onclick="eliminarEmpleadoAdmin(${idx})">Eliminar</button></td>
       </tr>`;
   });
-}
+};
 
 window.registrarNuevoEmpleadoAdmin = async function() {
   const usuarioEmp = document.getElementById("new-emp-user").value.trim();
   const claveEmp = document.getElementById("new-emp-pass").value.trim();
-  if (!usuarioEmp || !claveEmp) return alert("Ingresa el usuario y la clave del empleado.");
+  const tipoRecurso = document.getElementById("new-emp-tipo").value;
+  if (!usuarioEmp || !claveEmp) return alert("Ingresa el identificador y la clave del recurso.");
 
   let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey);
   if (!neg) return;
 
   if (!neg.empleadosExtra) neg.empleadosExtra = [];
-  neg.empleadosExtra.push({ pass: claveEmp, user: usuarioEmp });
+  neg.empleadosExtra.push({ pass: claveEmp, user: usuarioEmp, tipo: tipoRecurso });
 
-  neg.precioLicencia = (neg.precioLicencia || 20) + 5;
+  let baseModulos = neg.precioLicenciaBase || 20;
+  let extraCount = neg.empleadosExtra.length;
+  neg.precioLicencia = baseModulos + calcularCostoAdicionales(extraCount);
 
   await saveNegociosRegistry(negociosRegistry);
   document.getElementById("new-emp-user").value = "";
   document.getElementById("new-emp-pass").value = "";
   renderizarGestionEmpleadosAdmin();
-  alert(`✅ Cuenta de empleado "${usuarioEmp}" creada con éxito.`);
-}
+  alert(`✅ Recurso adicional (${tipoRecurso}) registrado con éxito. Se actualizó la tarifa de licencia.`);
+};
 
 window.eliminarEmpleadoAdmin = async function(idx) {
   let neg = negociosRegistry.find(n => n.adminKey === currentAccountKey);
   if (!neg || !neg.empleadosExtra) return;
 
   neg.empleadosExtra.splice(idx, 1);
-  neg.precioLicencia = Math.max(20, neg.precioLicencia - 5);
+  let baseModulos = neg.precioLicenciaBase || 20;
+  let extraCount = neg.empleadosExtra.length;
+  neg.precioLicencia = extraCount === 0 ? baseModulos : (baseModulos + calcularCostoAdicionales(extraCount));
+  
   await saveNegociosRegistry(negociosRegistry);
   renderizarGestionEmpleadosAdmin();
-  alert("🗑️ Cuenta de empleado eliminada.");
-}
+  alert("🗑️ Recurso adicional eliminado.");
+};
 
 window.calcularPrecioNuevoNegocio = function() {
   let p = 0;
   let modulosSel = 0;
-  if (document.getElementById("mod-chk-comercio").checked) { p += 20; modulosSel++; }
-  if (document.getElementById("mod-chk-hotel").checked) { p += 35; modulosSel++; }
-  if (document.getElementById("mod-chk-citas").checked) { p += 30; modulosSel++; }
+  if (document.getElementById("mod-chk-comercio")?.checked) { p += 20; modulosSel++; }
+  if (document.getElementById("mod-chk-hotel")?.checked) { p += 35; modulosSel++; }
+  if (document.getElementById("mod-chk-citas")?.checked) { p += 30; modulosSel++; }
 
   if (modulosSel >= 3) {
     p = 65; 
-  } else if (modulosSel === 2 && document.getElementById("mod-chk-comercio").checked && document.getElementById("mod-chk-citas").checked) {
+  } else if (modulosSel === 2 && document.getElementById("mod-chk-comercio")?.checked && document.getElementById("mod-chk-citas")?.checked) {
     p = 40; 
   }
 
   const lbl = document.getElementById("lbl-precio-estimado");
   if (lbl) lbl.innerText = `💡 Precio estimado con Combos: $${p} USD`;
-}
+};
 
 async function mostrarPanelAuditoriaTasas() {
   document.getElementById("subpage-audit").classList.remove("hidden");
@@ -661,8 +649,8 @@ async function mostrarPanelAuditoriaTasas() {
 
     container.innerHTML += `
       <div style="background: #ffffff; border: 2px solid #212529; padding: 18px; border-radius: 8px;">
-        <h4 style="margin-top:0; color:#212529;">${neg.bizName}</h4>
-        <p style="margin: 6px 0; font-size:12px; color:#555;">Jefe: ${neg.adminPass} | Empleados Extra: ${(neg.empleadosExtra || []).length}</p>
+        <h4 style="margin-top:0; color:#212529;">${neg.bizName} (${neg.pais || 'VE'})</h4>
+        <p style="margin: 6px 0; font-size:12px; color:#555;">Jefe: ${neg.adminPass} | Adicionales: ${(neg.empleadosExtra || []).length}</p>
         <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; font-size: 13px;">
           💵 Dólar: ${tasas.dolar} Bs | 📊 Movimientos: $${totalVentas.toFixed(2)} | 📦 Registros: ${dbData.length}<br>
           <button class="btn-success" style="margin-top:8px; padding:6px; font-size:12px;" onclick="descargarPDFYVaciarLibro('${neg.adminKey}', '${neg.bizName}')">📥 Descargar PDF y Vaciar Libro</button>
@@ -687,7 +675,7 @@ async function mostrarAnalyticAndRecommendations() {
   container.innerHTML = `
     <div style="background:#fff; padding:20px; border-radius:8px; border: 1px solid #ced4da;">
       <h4>📈 Reporte de Análisis BI (${selectedNeg.bizName})</h4>
-      <p><strong>Recomendación Ejecutiva:</strong> Se sugiere reponer stock y colocar ofertas visibles para incrementar conversiones.</p>
+      <p><strong>Recomendación Ejecutiva:</strong> Se sugiere reponer stock y verificar los métodos de pago móvil en horas pico para maximizar la eficiencia.</p>
       <button class="btn-success" style="width:auto; padding: 10px 20px; margin-top: 10px;" onclick="descargarPDFYVaciarLibro('${selectedNeg.adminKey}', '${selectedNeg.bizName}')">📤 Descargar Reporte PDF & Vaciar Libro</button>
     </div>`;
 }
@@ -715,8 +703,8 @@ function mostrarGestionCuentas() {
 
     tbody.innerHTML += `
       <tr>
-        <td><strong>${neg.bizName}</strong><br><small>Ref: ${neg.refCode || 'Ninguno'}</small></td>
-        <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass}</td>
+        <td><strong>${neg.bizName}</strong><br><small>🌍 País: ${neg.pais || 'VE'} | Banco: ${neg.banco || 'N/A'}</small></td>
+        <td>🔑 <strong>Jefe:</strong> ${neg.adminPass}<br>🔑 <strong>Emp:</strong> ${neg.empPass} (+${(neg.empleadosExtra||[]).length} recursos)</td>
         <td><small>${listaModulos}</small><br>⏳ <strong>Vence:</strong> ${fechaVencimiento}</td>
         <td><strong>$${precio} USD</strong></td>
         <td>${isSuspended ? '⛔ SUSPENDIDO' : '🟢 ACTIVA'}</td>
@@ -739,6 +727,10 @@ window.extenderLicenciaNegocio = async function(idx) {
 
 window.registrarNuevaCuentaUnificada = async function() {
   const bizName = document.getElementById("new-account-biz").value.trim();
+  const pais = document.getElementById("new-account-country").value;
+  const banco = document.getElementById("new-account-banco").value.trim();
+  const telefono = document.getElementById("new-account-telefono").value.trim();
+  const rif = document.getElementById("new-account-rif").value.trim();
   const adminPass = document.getElementById("new-account-pass-admin").value.trim();
   const empPass = document.getElementById("new-account-pass-emp").value.trim();
   const referidoElegido = document.getElementById("new-account-ref-select").value.trim();
@@ -771,7 +763,8 @@ window.registrarNuevaCuentaUnificada = async function() {
   let codigoRefFinal = referidoElegido || localStorage.getItem("gams_ref_active") || "";
 
   negociosRegistry.push({ 
-    id, bizName, modules: modulosSeleccionados, precioLicencia: precioTotal,
+    id, bizName, pais, banco, telefono, rif, 
+    modules: modulosSeleccionados, precioLicenciaBase: precioTotal, precioLicencia: precioTotal,
     dbTarget: "NUEVA", adminKey, adminPass, empKey, empPass, status: "ACTIVO", 
     expiry: expiryStr, refCode: codigoRefFinal, payMode, empleadosExtra: []
   });
@@ -780,7 +773,7 @@ window.registrarNuevaCuentaUnificada = async function() {
 
   await saveNegociosRegistry(negociosRegistry);
   mostrarGestionCuentas();
-  alert(`🎉 Negocio multimodular "${bizName}" registrado con éxito.`);
+  alert(`🎉 Negocio multimodular "${bizName}" (${pais}) registrado con éxito.`);
 }
 
 window.toggleEstadoNegocio = async function(idx) {
@@ -866,7 +859,6 @@ window.createProd = async function() {
   await registrarTransaccionDiaria(currentAccountKey, "ALTA", `Nuevo registro: ${name} (SKU: ${barcode})`, 0);
   limpiarImagenCargada();
   
-  // Limpiar campos
   document.getElementById("prod-barcode").value = "";
   document.getElementById("prod-name").value = "";
   document.getElementById("prod-img").value = "";

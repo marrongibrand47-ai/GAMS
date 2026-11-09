@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>GAMS - Sistema Multimodular Escalable</title>
 
+<!-- PWA Manifest & Theme -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0056b3">
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 <!-- FIREBASE SDK -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -92,7 +97,7 @@
   <!-- PESTAÑAS COMERCIO -->
   <div id="comercio-nav" class="nav-tabs hidden">
     <button id="c-tab-inv" class="active" onclick="switchComercioTab('inv')">📦 Inventario & Libro Diario</button>
-    <button id="c-tab-pos" onclick="switchComercioTab('pos')">🛒 POS & Carrito</button>
+    <button id="c-tab-pos" onclick="switchComercioTab('pos')">🛒 Caja Registradora (POS)</button>
     <button id="c-tab-cxc" onclick="switchComercioTab('cxc')">💳 Cuentas por Cobrar (CxC)</button>
     <button id="c-tab-album" onclick="switchComercioTab('album')">📸 Galería</button>
     <button id="c-tab-low" onclick="switchComercioTab('low')">⚠️ Alertas Stock</button>
@@ -104,17 +109,21 @@
   <div id="modulo-citas-container" class="hidden"></div>
   <div id="modulo-referidos-container" class="hidden"></div>
 
-  <!-- SECCIÓN GESTIÓN DE EMPLEADOS (PARA ADMIN) -->
+  <!-- SECCIÓN GESTIÓN DE EMPLEADOS Y POS ADICIONALES (PARA ADMIN) -->
   <div id="subpage-empleados-admin" class="hidden">
-    <h3>👥 Gestión de Empleados (Sub-niveles)</h3>
+    <h3>👥 Gestión de Empleados y Puntos de Venta (POS) Físicos</h3>
     <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #ced4da; margin-bottom: 15px;">
-      <p style="font-size: 13px; color: #555;">Crea cuentas de empleado individuales para tus cajeros o personal de turno. Cada empleado adicional tiene un costo de sub-nivel de <strong>+$5 USD/mes</strong>.</p>
-      <input type="text" id="new-emp-user" placeholder="Nombre de usuario / Identificador (Ej: cajero_carlos)">
-      <input type="password" id="new-emp-pass" placeholder="Clave de acceso de empleado">
-      <button class="btn-success" style="width: auto; margin-top: 5px;" onclick="registrarNuevoEmpleadoAdmin()">➕ Crear Cuenta de Empleado</button>
+      <p style="font-size: 13px; color: #555;">Registra cajeros adicionales o terminales POS físicos conectados. Tarifa progresiva: <strong>El 1.º adicional cuesta $10 USD/mes y los siguientes $5 USD/mes cada uno</strong>.</p>
+      <input type="text" id="new-emp-user" placeholder="Usuario / Identificador del recurso (Ej: caja_2)">
+      <input type="password" id="new-emp-pass" placeholder="Clave de acceso">
+      <select id="new-emp-tipo" style="font-weight:bold; margin-top:6px;">
+        <option value="EMPLEADO">👤 Cuenta de Empleado Extra</option>
+        <option value="POS">🖥️ Terminal POS Físico / Datáfono Adicional</option>
+      </select>
+      <button class="btn-success" style="width: auto; margin-top: 8px;" onclick="registrarNuevoEmpleadoAdmin()">➕ Registrar Recurso Adicional</button>
     </div>
     <table>
-      <thead><tr><th>Usuario de Empleado</th><th>Estado</th><th>Acción</th></tr></thead>
+      <thead><tr><th>Recurso / Usuario</th><th>Tipo</th><th>Costo</th><th>Acción</th></tr></thead>
       <tbody id="tabla-empleados-admin-list"></tbody>
     </table>
   </div>
@@ -139,13 +148,24 @@
     <div id="analytics-content-container"></div>
   </div>
 
-  <!-- GESTIÓN DE CUENTAS MULTIMODULAR -->
+  <!-- GESTIÓN DE CUENTAS MULTIMODULAR Y MULTIPAÍS -->
   <div id="subpage-accounts" class="hidden">
     <h3>⚙️ Gestión y Control de Cuentas</h3>
     <div style="background: #ffffff; border: 1px solid #ced4da; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-      <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio Multimodular</h4>
+      <h4 style="margin-top:0; color:#0056b3;">➕ Crear Nuevo Negocio Multimodular y Multipaís</h4>
       <input type="text" id="new-account-biz" placeholder="Ej: Negocio Híbrido GAMS">
       
+      <!-- SELECTOR GLOBAL DE PAÍS Y MONEDA -->
+      <div style="margin: 10px 0;">
+        <label style="font-weight: bold; font-size: 13px; color: #555;">🌍 País y Moneda Base:</label>
+        <select id="new-account-country" style="font-weight: bold; color: #0056b3; margin-top: 4px;">
+          <option value="VE">🇻🇪 Venezuela (Bolívares / Dólares - Pago Móvil / Divisas)</option>
+          <option value="MX">🇲🇽 México (Pesos Mexicanos - SPEI / MXN)</option>
+          <option value="CO">🇨🇴 Colombia (Pesos Colombianos - COP / Nequi)</option>
+          <option value="US">🇺🇸 Global / EE.UU. (Dólares - USD)</option>
+        </select>
+      </div>
+
       <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin: 10px 0; border: 1px dashed #007bff;">
         <label style="font-weight: bold; font-size: 13px; color: #0056b3; display: block; margin-bottom: 6px;">🧩 Selecciona los Módulos Activos (Combos Automáticos):</label>
         <div style="display: flex; gap: 15px; flex-wrap: wrap; font-size: 14px;">
@@ -154,6 +174,14 @@
           <label><input type="checkbox" id="mod-chk-citas" value="Citas y Agendas" onchange="calcularPrecioNuevoNegocio()"> 📅 Citas ($30)</label>
         </div>
         <p style="margin: 8px 0 0 0; font-size: 12px; color: #28a745; font-weight: bold;" id="lbl-precio-estimado">💡 Precio estimado con Combos: $0 USD</p>
+      </div>
+
+      <!-- DATOS BANCARIOS PARA PAGO MÓVIL Y QR -->
+      <div style="background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ced4da; margin: 10px 0;">
+        <label style="font-weight: bold; font-size: 12px; color: #0056b3;">🏦 Datos Bancarios / Pago Móvil / Transferencia:</label>
+        <input type="text" id="new-account-banco" placeholder="Banco (Ej: Banesco / Zelle)" style="margin:4px 0;">
+        <input type="text" id="new-account-telefono" placeholder="Teléfono o Cuenta Bancaria" style="margin:4px 0;">
+        <input type="text" id="new-account-rif" placeholder="Cédula / RIF / ID Jurídico" style="margin:4px 0;">
       </div>
 
       <div style="margin: 10px 0;">
@@ -180,7 +208,7 @@
     <div style="overflow-x: auto;">
       <table>
         <thead>
-          <tr><th>Comercio</th><th>Claves (Jefe / Emp)</th><th>Módulos & Vencimiento</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
+          <tr><th>Comercio / País</th><th>Claves (Jefe / Emp)</th><th>Módulos & Vencimiento</th><th>Precio</th><th>Estado</th><th>Acciones</th></tr>
         </thead>
         <tbody id="accounts-control-table"></tbody>
       </table>
