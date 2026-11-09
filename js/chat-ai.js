@@ -16,7 +16,7 @@ window.renderChatAI = function() {
         </div>
       </div>
       
-      <!-- BOTONES DE MENSAJE RÁPIDO RESTAURADOS -->
+      <!-- BOTONES DE MENSAJE RÁPIDO -->
       <div style="padding: 6px 10px; background: #f1f3f5; display: flex; gap: 5px; flex-wrap: wrap; border-top: 1px solid #ced4da;">
         <button onclick="enviarMensajeRapido('¿Cuáles son los precios y combos?')" style="font-size:11px; padding:6px 8px; flex:1; min-width:80px; background:#007bff; color:white; border-radius:4px; border:none; cursor:pointer;">💰 Precios</button>
         <button onclick="enviarMensajeRapido('Necesito soporte técnico')" style="font-size:11px; padding:6px 8px; flex:1; min-width:80px; background:#6c757d; color:white; border-radius:4px; border:none; cursor:pointer;">🛠️ Soporte</button>
@@ -84,13 +84,17 @@ function generarRespuestaMichael(pregunta) {
     📊 <strong>Servicios Especiales y Asesoramiento Incluidos:</strong><br>
     • Asesoramiento contable automatizado con cálculo de IVA (16%) y Cuentas por Cobrar (CxC).<br>
     • Módulo de <strong>Análisis BI y Recomendaciones Ejecutivas</strong> para tomar decisiones estratégicas de ventas y stock.<br><br>
-    📞 <em>Para más información o contrataciones personalizadas, por favor contacte al soporte técnico oficial de GAMS Company.</em>`;
+    📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+    📱 WhatsApp: +58 4242015806<br>
+    📸 Instagram: @gibrand_x`;
   }
 
   if (p.includes("soporte") || p.includes("tecnico") || p.includes("ayuda") || p.includes("contacto")) {
     return `🛠️ <strong>Soporte Técnico GAMS Company:</strong><br>
     Nuestro equipo de soporte técnico está disponible para asistirte con la configuración de tus terminales POS físicos, respaldos en Firebase, sincronización de sucursales y auditorías contables.<br><br>
-    📞 <em>Para atención directa y personalizada, por favor contacta al soporte técnico oficial de GAMS Company.</em>`;
+    📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+    📱 WhatsApp: +58 4242015806<br>
+    📸 Instagram: @gibrand_x`;
   }
 
   if (p.includes("producto") || p.includes("crear prod") || p.includes("inventario")) {
@@ -99,7 +103,9 @@ function generarRespuestaMichael(pregunta) {
     2. Baja al formulario inferior titulado <em>"1. Registrar Elemento en el Sistema"</em>.<br>
     3. Ingresa el código SKU, nombre, stock inicial, precio en Bolívares o Dólares (se convierte automáticamente a USD) y opcionalmente la URL de la imagen.<br>
     4. Haz clic en <strong>Guardar Elemento</strong>.<br><br>
-    📞 <em>¿Dudas adicionales? Contacta al soporte técnico de GAMS Company.</em>`;
+    📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+    📱 WhatsApp: +58 4242015806<br>
+    📸 Instagram: @gibrand_x`;
   }
 
   if (p.includes("cuarto") || p.includes("hotel") || p.includes("registrar cuartos")) {
@@ -108,15 +114,21 @@ function generarRespuestaMichael(pregunta) {
     2. Dirígete al formulario inferior de registro.<br>
     3. Ingresa el número o código de cuarto (SKU), nombre, cantidad de camas, baños, comodidades y las tarifas en Bolívares (1h, 3h, Noche, Día, Semana) las cuales el sistema convertirá automáticamente a USD.<br>
     4. Haz clic en <strong>Guardar Elemento</strong>.<br><br>
-    📞 <em>¿Necesitas asistencia? Contacta al soporte técnico oficial de GAMS Company.</em>`;
+    📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+    📱 WhatsApp: +58 4242015806<br>
+    📸 Instagram: @gibrand_x`;
   }
 
   if (p.includes("contable") || p.includes("asesoramiento") || p.includes("bi") || p.includes("analisis") || p.includes("recomendacion")) {
     return `📈 <strong>Asesoramiento Contable y Análisis BI en GAMS:</strong><br>
-    Nuestra plataforma integra herramientas de análisis de datos para evaluar las ventas en tiempo real, generar reportes en PDF, calcular automáticamente impuestos (IVA 16%) y ofrecer recomendaciones ejecutivas personalizadas.<br><br>
-    📞 <em>Para consultas contables avanzadas, contacte al soporte técnico oficial de GAMS Company.</em>`;
+    Nuestra plataforma integra herramientas de análisis de datos para ventas en tiempo real, reportes en PDF, IVA (16%) y recomendaciones ejecutivas.<br><br>
+    📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+    📱 WhatsApp: +58 4242015806<br>
+    📸 Instagram: @gibrand_x`;
   }
 
-  return `🤖 ¡Hola! Soy Michael, tu asistente inteligente en GAMS Company. Utiliza los botones de acceso rápido arriba o pregúntame sobre precios ($20-$75), soporte técnico, creación de productos o registro de cuartos.<br><br>
-  📞 <em>Para más información o contrataciones personalizadas, contacte al soporte técnico oficial de GAMS Company.</em>`;
+  return `🤖 ¡Hola! Soy Michael, tu asistente inteligente en GAMS Company. Utiliza los botones de acceso rápido arriba o pregúntame sobre precios, soporte, creación de productos o registro de cuartos.<br><br>
+  📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
+  📱 WhatsApp: +58 4242015806<br>
+  📸 Instagram: @gibrand_x`;
 }
