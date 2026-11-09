@@ -91,7 +91,7 @@ function generarRespuestaMichael(pregunta) {
 
   if (p.includes("soporte") || p.includes("tecnico") || p.includes("ayuda") || p.includes("contacto")) {
     return `🛠️ <strong>Soporte Técnico GAMS Company:</strong><br>
-    Nuestro equipo de soporte técnico está disponible para asistirte con la configuración de tus terminales POS físicos, respaldos en Firebase, sincronización de sucursales y auditorías contables.<br><br>
+    Nuestro equipo de soporte técnico está disponible para asistirte con la configuración de tus terminales POS físicos, sincronización de sucursales y auditorías contables.<br><br>
     📞 <strong>Soporte Técnico GAMS - Gibrand Marron:</strong><br>
     📱 WhatsApp: +58 4242015806<br>
     📸 Instagram: @gibrand_x`;
